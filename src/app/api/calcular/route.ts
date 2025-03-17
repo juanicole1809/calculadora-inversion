@@ -26,9 +26,13 @@ function calcularInversion(
   const total_invertido = capital_inicial + total_aportes_mensuales
   const ganancia_neta = monto_total - total_invertido
   
+  // Actualizamos el costo de vida mensual con la inflación acumulada durante el periodo de inversión
+  const factor_inflacion = Math.pow(1 + (inflacion_anual / 100), total_anios)
+  const costo_vida_mensual_actualizado = costo_vida_mensual * factor_inflacion
+  
   // Verificar si el capital nunca se agotará
   const interes_mensual_inicial = monto_total * tasa_mensual
-  const retiro_mensual_inicial = costo_vida_mensual
+  const retiro_mensual_inicial = costo_vida_mensual_actualizado
   
   if (interes_mensual_inicial > retiro_mensual_inicial) {
     return {
@@ -38,15 +42,17 @@ function calcularInversion(
       total_invertido,
       monto_total,
       ganancia_neta,
+      costo_vida_inicial: costo_vida_mensual,
+      costo_vida_actualizado: costo_vida_mensual_actualizado,
       anios_retiro: "∞",
-      mensaje_retiro: `El capital no se agotará: los intereses mensuales ($${interes_mensual_inicial.toFixed(2)}) son mayores que los retiros mensuales ($${retiro_mensual_inicial.toFixed(2)})`
+      mensaje_retiro: `El capital no se agotará: los intereses mensuales ($${interes_mensual_inicial.toFixed(2)}) son mayores que los retiros mensuales actualizados por inflación ($${retiro_mensual_inicial.toFixed(2)})`
     }
   }
   
   // Cálculo de años de retiro considerando inflación
   let meses_retiro = 0
   let monto_restante = monto_total
-  let retiro_mensual_actual = costo_vida_mensual
+  let retiro_mensual_actual = costo_vida_mensual_actualizado
   const MAX_MESES = 1200 // Límite de 100 años
   
   while (monto_restante > retiro_mensual_actual && meses_retiro < MAX_MESES) {
@@ -72,8 +78,10 @@ function calcularInversion(
     total_invertido,
     monto_total,
     ganancia_neta,
+    costo_vida_inicial: costo_vida_mensual,
+    costo_vida_actualizado: costo_vida_mensual_actualizado,
     anios_retiro,
-    mensaje_retiro: `Años de retiro posibles: ${anios_retiro}`
+    mensaje_retiro: `Años de retiro posibles: ${anios_retiro}. Ten en cuenta que tu costo de vida mensual se ha actualizado por inflación de $${costo_vida_mensual.toFixed(2)} a $${costo_vida_mensual_actualizado.toFixed(2)} tras ${total_anios} años.`
   }
 }
 

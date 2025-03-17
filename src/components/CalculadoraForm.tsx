@@ -7,7 +7,14 @@ import { Button } from './ui/button'
 import { Label } from './ui/label'
 import { Table, TableBody, TableCell, TableRow } from './ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { InfoIcon, XIcon, RefreshCw } from 'lucide-react'
+import { InfoIcon, XIcon, RefreshCw, Edit } from 'lucide-react'
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from './ui/select'
 
 interface ResultadosInversion {
   capital_inicial: number
@@ -18,6 +25,8 @@ interface ResultadosInversion {
   ganancia_neta: number
   anios_retiro: number | string
   mensaje_retiro: string
+  costo_vida_inicial: number
+  costo_vida_actualizado: number
 }
 
 interface FormData {
@@ -41,12 +50,14 @@ export default function CalculadoraForm() {
     costo_vida_mensual: 0,
     capital_inicial: 0,
     inversion_mensual: 0,
-    rendimiento_anual: 0,
-    inflacion_anual: 3 // Valor por defecto
+    rendimiento_anual: 6, // Valor por defecto actualizado a 6%
+    inflacion_anual: 3.5
   })
   const [activeTab, setActiveTab] = useState('datos-personales')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [activeInfoBox, setActiveInfoBox] = useState<string | null>(null)
+  const [inflacionPersonalizada, setInflacionPersonalizada] = useState(false)
+  const [rendimientoPersonalizado, setRendimientoPersonalizado] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -107,16 +118,8 @@ export default function CalculadoraForm() {
       
       // Mejorar el mensaje de retiro cuando el capital no se agotará
       if (result.anios_retiro === "∞") {
-        // Extraer los valores de intereses mensuales y retiros mensuales del mensaje original
-        const mensajeOriginal = result.mensaje_retiro;
-        // Buscar los valores numéricos en el mensaje
-        const interesesMatch = mensajeOriginal.match(/\$(\d+(\.\d+)?)/);
-        
-        if (interesesMatch) {
-          const interesesMensuales = parseFloat(interesesMatch[1]);
-          
-          result.mensaje_retiro = `¡Excelente noticia! Tu capital no se agotará nunca, ya que el dinero que recibirás mensualmente producto de los intereses (${formatCurrency(interesesMensuales)}) será mayor que lo que necesitas retirar para cubrir tus gastos según el costo de vida indicado (${formatCurrency(formData.costo_vida_mensual)}).`;
-        }
+        // Simplemente usamos los valores ya proporcionados por la API
+        result.mensaje_retiro = `¡Excelente noticia! Tu capital no se agotará nunca, ya que el dinero que recibirás mensualmente producto de los intereses (${formatCurrency(result.monto_total * formData.rendimiento_anual / 100 / 12)}) será mayor que lo que necesitas retirar para cubrir tus gastos según el costo de vida proyectado al momento de tu retiro (${formatCurrency(result.costo_vida_actualizado)}).`;
       }
       
       setResultados(result)
@@ -167,7 +170,7 @@ export default function CalculadoraForm() {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'USD'
-    }).format(number)
+    }).format(number).replace('US$', 'USD $')
   }
 
   const formatYears = (years: number | string) => {
@@ -198,7 +201,7 @@ export default function CalculadoraForm() {
       ...prev,
       capital_inicial: 0,
       inversion_mensual: 0,
-      rendimiento_anual: 0
+      rendimiento_anual: 6
       // Mantenemos los datos personales y la inflación
     }))
     setValidationErrors({})
@@ -434,20 +437,68 @@ export default function CalculadoraForm() {
 
                   <div className="space-y-2">
                     <Label htmlFor="rendimiento_anual">Rendimiento de Tu Inversión (TNA %)</Label>
-                    <div className="relative">
-                      <Input
-                        id="rendimiento_anual"
-                        name="rendimiento_anual"
-                        type="number"
-                        placeholder="Ej: 6.25"
-                        min="0"
-                        step="0.01"
-                        required
-                        className={`pr-8 ${validationErrors.rendimiento_anual ? "border-red-500" : ""}`}
-                        value={formData.rendimiento_anual || ''}
-                        onChange={handleChange}
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                    <div className="relative flex flex-col space-y-2">
+                      <Select
+                        value={
+                          formData.rendimiento_anual === 3 ? "conservadora" :
+                          formData.rendimiento_anual === 6 ? "moderada" :
+                          formData.rendimiento_anual === 9 ? "arriesgada" :
+                          "otro"
+                        }
+                        onValueChange={(value) => {
+                          if (value === "conservadora") {
+                            setRendimientoPersonalizado(false);
+                            setFormData(prev => ({ ...prev, rendimiento_anual: 3 }));
+                          } else if (value === "moderada") {
+                            setRendimientoPersonalizado(false);
+                            setFormData(prev => ({ ...prev, rendimiento_anual: 6 }));
+                          } else if (value === "arriesgada") {
+                            setRendimientoPersonalizado(false);
+                            setFormData(prev => ({ ...prev, rendimiento_anual: 9 }));
+                          } else if (value === "otro") {
+                            setRendimientoPersonalizado(true);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Seleccionar rendimiento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="conservadora">Conservadora (3%)</SelectItem>
+                          <SelectItem value="moderada">Moderada (6%)</SelectItem>
+                          <SelectItem value="arriesgada">Arriesgada (9%)</SelectItem>
+                          <SelectItem value="otro">Otro valor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {rendimientoPersonalizado && (
+                        <div className="relative mt-2">
+                          <Input
+                            id="rendimiento_anual_personalizado"
+                            name="rendimiento_anual_personalizado"
+                            type="number"
+                            placeholder="Ingresa un valor personalizado"
+                            min="0"
+                            step="0.1"
+                            className="pr-8"
+                            value={formData.rendimiento_anual}
+                            onChange={(e) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                rendimiento_anual: parseFloat(e.target.value) || 0
+                              }))
+                            }}
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                        </div>
+                      )}
+
+                      {!rendimientoPersonalizado && (
+                        <p className="text-sm text-slate-500 mt-1">
+                          Rendimiento promedio esperado en USD: {formData.rendimiento_anual}%
+                        </p>
+                      )}
+                      
                       {validationErrors.rendimiento_anual && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.rendimiento_anual}</p>
                       )}
@@ -456,20 +507,71 @@ export default function CalculadoraForm() {
 
                   <div className="space-y-2">
                     <Label htmlFor="inflacion_anual">Inflación Anual Esperada (%)</Label>
-                    <div className="relative">
-                      <Input
-                        id="inflacion_anual"
-                        name="inflacion_anual"
-                        type="number"
-                        placeholder="Ej: 3"
-                        min="0"
-                        step="0.01"
-                        required
-                        className="pr-8"
-                        value={formData.inflacion_anual}
-                        onChange={handleChange}
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                    <div className="relative flex flex-col space-y-2">
+                      <Select
+                        value={
+                          formData.inflacion_anual === 1.5 ? "baja" :
+                          formData.inflacion_anual === 3.5 ? "moderada" :
+                          formData.inflacion_anual === 6 ? "alta" :
+                          "otro"
+                        }
+                        onValueChange={(value) => {
+                          if (value === "baja") {
+                            setInflacionPersonalizada(false);
+                            setFormData(prev => ({ ...prev, inflacion_anual: 1.5 }));
+                          } else if (value === "moderada") {
+                            setInflacionPersonalizada(false);
+                            setFormData(prev => ({ ...prev, inflacion_anual: 3.5 }));
+                          } else if (value === "alta") {
+                            setInflacionPersonalizada(false);
+                            setFormData(prev => ({ ...prev, inflacion_anual: 6 }));
+                          } else if (value === "otro") {
+                            setInflacionPersonalizada(true);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Seleccionar inflación" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="baja">Baja (1.5%)</SelectItem>
+                          <SelectItem value="moderada">Moderada (3.5%)</SelectItem>
+                          <SelectItem value="alta">Alta (6%)</SelectItem>
+                          <SelectItem value="otro">Otro valor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {inflacionPersonalizada && (
+                        <div className="relative mt-2">
+                          <Input
+                            id="inflacion_anual_personalizado"
+                            name="inflacion_anual_personalizado"
+                            type="number"
+                            placeholder="Ingresa un valor personalizado"
+                            min="0"
+                            step="0.1"
+                            className="pr-8"
+                            value={formData.inflacion_anual}
+                            onChange={(e) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                inflacion_anual: parseFloat(e.target.value) || 0
+                              }))
+                            }}
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                        </div>
+                      )}
+
+                      {!inflacionPersonalizada && (
+                        <p className="text-sm text-slate-500 mt-1">
+                          Inflación promedio esperada en USD: {formData.inflacion_anual}%
+                        </p>
+                      )}
+                      
+                      {validationErrors.inflacion_anual && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.inflacion_anual}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -532,6 +634,14 @@ export default function CalculadoraForm() {
                   <TableRow className="bg-blue-50">
                     <TableCell className="font-medium">Ganancia Neta:</TableCell>
                     <TableCell>{formatCurrency(resultados.ganancia_neta)}</TableCell>
+                  </TableRow>
+                  <TableRow className="bg-orange-50">
+                    <TableCell className="font-medium">Costo de Vida Mensual Actual:</TableCell>
+                    <TableCell>{formatCurrency(resultados.costo_vida_inicial)}</TableCell>
+                  </TableRow>
+                  <TableRow className="bg-orange-100">
+                    <TableCell className="font-medium">Costo de Vida Mensual al Retirarse:</TableCell>
+                    <TableCell>{formatCurrency(resultados.costo_vida_actualizado)}</TableCell>
                   </TableRow>
                   <TableRow className="bg-yellow-50">
                     <TableCell className="font-medium">Años de Retiro Posibles:</TableCell>
