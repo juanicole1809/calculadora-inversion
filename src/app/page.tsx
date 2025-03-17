@@ -41,7 +41,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActivePhrase((current) => (current + 1) % phrases.length)
-    }, 5000)
+    }, 6000)
     return () => clearInterval(interval)
   }, [phrases.length])
 
@@ -63,8 +63,8 @@ export default function Home() {
         </div>
 
         {/* Phrases Carousel */}
-        <div className="max-w-3xl mx-auto mb-10">
-          <div className="relative h-64 md:h-56">
+        <div className="max-w-3xl mx-auto mb-16">
+          <div className="relative h-72 sm:h-64 md:h-56 mb-12">
             {phrases.map((phrase, index) => (
               <Card
                 key={index}
@@ -72,19 +72,21 @@ export default function Home() {
                   index === activePhrase ? "opacity-100 translate-y-0 z-10" : "opacity-0 translate-y-8 -z-10"
                 }`}
               >
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    {phrase.icon}
-                    <h2 className="text-xl md:text-2xl font-semibold text-slate-800">{phrase.title}</h2>
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-start sm:items-center gap-3 mb-3">
+                    <div className="flex-shrink-0 mt-1 sm:mt-0">
+                      {phrase.icon}
+                    </div>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800">{phrase.title}</h2>
                   </div>
-                  <p className="text-slate-600 text-lg">{phrase.description}</p>
+                  <p className="text-slate-600 text-base md:text-lg">{phrase.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Dots navigation */}
-          <div className="flex justify-center gap-2 mt-4">
+          {/* Dots navigation - moved outside the relative container */}
+          <div className="flex justify-center gap-2 mt-2">
             {phrases.map((_, index) => (
               <button
                 key={index}
@@ -98,8 +100,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm">
+        {/* CTA Section with enhanced design */}
+        <div className="text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border border-slate-100 mb-16">
           <div className="space-y-3">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
               Calcula tu plan de retiro personalizado
@@ -111,7 +113,7 @@ export default function Home() {
           </div>
 
           <Link href="/calculadora" passHref>
-            <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mt-4">
+            <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
               Empezar ahora
               <ArrowRight className="ml-2" size={20} />
             </Button>
@@ -120,9 +122,11 @@ export default function Home() {
           <p className="text-sm text-slate-500 mt-4">Toma el control de tu futuro financiero en menos de 5 minutos</p>
         </div>
 
-        <div className="mt-10 max-w-4xl mx-auto">
+        {/* Process Steps - now more visually connected */}
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl font-bold text-center mb-8 text-slate-800">Cómo funciona</h3>
           <div className="grid md:grid-cols-3 gap-5">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <span className="text-primary font-bold">1</span>
               </div>
@@ -132,7 +136,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <span className="text-primary font-bold">2</span>
               </div>
@@ -142,7 +146,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <span className="text-primary font-bold">3</span>
               </div>
