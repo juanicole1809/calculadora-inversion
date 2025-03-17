@@ -111,20 +111,26 @@ export default function CalculadoraForm() {
         const mensajeOriginal = result.mensaje_retiro;
         // Buscar los valores numéricos en el mensaje
         const interesesMatch = mensajeOriginal.match(/\$(\d+(\.\d+)?)/);
-        const retirosMatch = mensajeOriginal.match(/\$(\d+(\.\d+)?)\)/);
         
-        if (interesesMatch && retirosMatch) {
+        if (interesesMatch) {
           const interesesMensuales = parseFloat(interesesMatch[1]);
-          const retirosMensuales = parseFloat(retirosMatch[1]);
           
-          result.mensaje_retiro = `¡Excelente noticia! Tu capital no se agotará nunca, ya que el dinero que recibirás mensualmente producto de los intereses (${formatCurrency(interesesMensuales)}) será mayor que lo que necesitas retirar para cubrir tus gastos según el costo de vida indicado (${formatCurrency(retirosMensuales)}).`;
+          result.mensaje_retiro = `¡Excelente noticia! Tu capital no se agotará nunca, ya que el dinero que recibirás mensualmente producto de los intereses (${formatCurrency(interesesMensuales)}) será mayor que lo que necesitas retirar para cubrir tus gastos según el costo de vida indicado (${formatCurrency(formData.costo_vida_mensual)}).`;
         }
       }
       
       setResultados(result)
+      
+      // Desplazamiento automático hacia los resultados
+      setTimeout(() => {
+        const resultadosElement = document.getElementById('resultados-section');
+        if (resultadosElement) {
+          resultadosElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al realizar el cálculo. Por favor, intente nuevamente.')
+      alert('Error al realizar el cálculo. Por favor, intenta nuevamente.')
     } finally {
       setIsLoading(false)
     }
@@ -227,7 +233,7 @@ export default function CalculadoraForm() {
               <TabsContent value="datos-personales" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edad_actual">Edad Actual</Label>
+                    <Label htmlFor="edad_actual">Tu Edad Actual</Label>
                     <Input
                       id="edad_actual"
                       name="edad_actual"
@@ -246,7 +252,7 @@ export default function CalculadoraForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="edad_retiro">Edad de Retiro</Label>
+                    <Label htmlFor="edad_retiro">Tu Edad de Retiro</Label>
                     <Input
                       id="edad_retiro"
                       name="edad_retiro"
@@ -266,7 +272,7 @@ export default function CalculadoraForm() {
 
                   <div className="space-y-2 md:col-span-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="costo_vida_mensual">Costo de Vida Mensual al Retirarse (USD)</Label>
+                      <Label htmlFor="costo_vida_mensual">Tu Costo de Vida Mensual al Retirarte (USD)</Label>
                       <Button 
                         type="button" 
                         variant="ghost" 
@@ -327,7 +333,7 @@ export default function CalculadoraForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="capital_inicial">Capital Inicial (USD)</Label>
+                      <Label htmlFor="capital_inicial">Tu Capital Inicial (USD)</Label>
                       <Button 
                         type="button" 
                         variant="ghost" 
@@ -379,7 +385,7 @@ export default function CalculadoraForm() {
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="inversion_mensual">Aporte Mensual (USD)</Label>
+                      <Label htmlFor="inversion_mensual">Tu Aporte Mensual (USD)</Label>
                       <Button 
                         type="button" 
                         variant="ghost" 
@@ -427,7 +433,7 @@ export default function CalculadoraForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="rendimiento_anual">Rendimiento de la Inversión (TNA %)</Label>
+                    <Label htmlFor="rendimiento_anual">Rendimiento de Tu Inversión (TNA %)</Label>
                     <div className="relative">
                       <Input
                         id="rendimiento_anual"
@@ -496,7 +502,7 @@ export default function CalculadoraForm() {
             </Button>
           </div>
           
-          <Card className="mt-2">
+          <Card className="mt-2" id="resultados-section">
             <CardHeader>
               <CardTitle>Resumen Proyectado de tu Plan de Retiro</CardTitle>
             </CardHeader>
