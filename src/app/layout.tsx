@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Calculadora de Inversión",
-  description: "Calcula el potencial de tus inversiones con interés compuesto",
+  title: "Calculadora de Retiro",
+  description: "Calcula el rendimiento de tus inversiones para garantizar un retiro cómodo según tu estilo de vida deseado",
 };
 
 export default function RootLayout({
