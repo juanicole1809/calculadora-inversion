@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/card'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
 import { Table, TableBody, TableCell, TableRow } from './ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { InfoIcon, XIcon, RefreshCw, Edit } from 'lucide-react'
+import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator } from 'lucide-react'
 import { 
   Select, 
   SelectContent, 
@@ -15,6 +14,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from './ui/select'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ResultadosInversion {
   capital_inicial: number
@@ -53,7 +53,7 @@ export default function CalculadoraForm() {
     rendimiento_anual: 6, // Valor por defecto actualizado a 6%
     inflacion_anual: 3.5
   })
-  const [activeTab, setActiveTab] = useState('datos-personales')
+  const [formStep, setFormStep] = useState(0) // 0 = datos personales, 1 = datos de inversión
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [activeInfoBox, setActiveInfoBox] = useState<string | null>(null)
   const [inflacionPersonalizada, setInflacionPersonalizada] = useState(false)
@@ -85,7 +85,7 @@ export default function CalculadoraForm() {
       setValidationErrors(errors)
       // Si hay errores en la pestaña de datos personales, cambiar a esa pestaña
       if (errors.edad_actual || errors.edad_retiro || errors.costo_vida_mensual) {
-        setActiveTab('datos-personales')
+        setFormStep(0)
       }
       return
     }
@@ -170,7 +170,7 @@ export default function CalculadoraForm() {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'USD'
-    }).format(number).replace('US$', 'USD $')
+    }).format(number).replace('US$', '$ USD')
   }
 
   const formatYears = (years: number | string) => {
@@ -181,7 +181,7 @@ export default function CalculadoraForm() {
       }).format(years) + ' años'
   }
 
-  const handleNextTab = () => {
+  const handleNextStep = () => {
     // Validar datos personales antes de avanzar
     const errors = validatePersonalData()
     if (Object.keys(errors).length > 0) {
@@ -189,11 +189,11 @@ export default function CalculadoraForm() {
       return
     }
     
-    setActiveTab('datos-inversion')
+    setFormStep(1)
   }
 
-  const handlePrevTab = () => {
-    setActiveTab('datos-personales')
+  const handlePrevStep = () => {
+    setFormStep(0)
   }
 
   const handleReset = () => {
@@ -206,7 +206,7 @@ export default function CalculadoraForm() {
     }))
     setValidationErrors({})
     setResultados(null)
-    setActiveTab('datos-inversion')
+    setFormStep(1)
   }
 
   return (
@@ -225,369 +225,435 @@ export default function CalculadoraForm() {
             Completa todos los campos para calcular tu plan de retiro
           </CardDescription>
         </CardHeader>
+        
+        {/* Progress indicator */}
+        <div className="px-6">
+          <div className="w-full bg-gray-100 h-2 rounded-full mb-6">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all duration-300" 
+              style={{ width: formStep === 0 ? '50%' : '100%' }}
+            />
+          </div>
+          <div className="flex justify-between mb-6">
+            <div className="text-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${formStep === 0 ? 'bg-primary text-white' : 'bg-primary/20 text-primary'} mx-auto mb-2`}>
+                1
+              </div>
+              <span className={`text-sm font-medium ${formStep === 0 ? 'text-primary' : 'text-gray-600'}`}>
+                Datos Personales
+              </span>
+            </div>
+            <div className="text-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${formStep === 1 ? 'bg-primary text-white' : 'bg-primary/20 text-primary'} mx-auto mb-2`}>
+                2
+              </div>
+              <span className={`text-sm font-medium ${formStep === 1 ? 'text-primary' : 'text-gray-600'}`}>
+                Datos de Inversión
+              </span>
+            </div>
+          </div>
+        </div>
+        
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="datos-personales">Datos Personales</TabsTrigger>
-                <TabsTrigger value="datos-inversion">Datos de Inversión</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="datos-personales" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edad_actual">Tu Edad Actual</Label>
-                    <Input
-                      id="edad_actual"
-                      name="edad_actual"
-                      type="number"
-                      placeholder="Ej: 30"
-                      min="0"
-                      step="1"
-                      required
-                      value={formData.edad_actual || ''}
-                      onChange={handleChange}
-                      className={validationErrors.edad_actual ? "border-red-500" : ""}
-                    />
-                    {validationErrors.edad_actual && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.edad_actual}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="edad_retiro">Tu Edad de Retiro</Label>
-                    <Input
-                      id="edad_retiro"
-                      name="edad_retiro"
-                      type="number"
-                      placeholder="Ej: 65"
-                      min="0"
-                      step="1"
-                      required
-                      value={formData.edad_retiro || ''}
-                      onChange={handleChange}
-                      className={validationErrors.edad_retiro ? "border-red-500" : ""}
-                    />
-                    {validationErrors.edad_retiro && (
-                      <p className="text-red-500 text-sm mt-1">{validationErrors.edad_retiro}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="costo_vida_mensual">Tu Costo de Vida Mensual al Retirarte (USD)</Label>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveInfoBox(activeInfoBox === 'costo_vida_mensual' ? null : 'costo_vida_mensual');
-                        }}
-                      >
-                        <InfoIcon className="h-4 w-4 text-stone-500" />
-                        <span className="sr-only">Información sobre Costo de Vida Mensual</span>
-                      </Button>
-                    </div>
-                    {activeInfoBox === 'costo_vida_mensual' && (
-                      <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-5 w-5 p-0 absolute top-2 right-2"
-                          onClick={() => setActiveInfoBox(null)}
-                        >
-                          <XIcon className="h-3 w-3 text-stone-500" />
-                        </Button>
-                        <p className="text-sm text-stone-700 pr-6">
-                          Importe en dólares que estimas gastar mensualmente al momento de encontrarte retirado (cuando no poseas ingresos activos por no estar trabajando).
-                        </p>
-                      </div>
-                    )}
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+            <AnimatePresence mode="wait">
+              {formStep === 0 && (
+                <motion.div 
+                  key="step1"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="edad_actual">Tu Edad Actual</Label>
                       <Input
-                        id="costo_vida_mensual"
-                        name="costo_vida_mensual"
+                        id="edad_actual"
+                        name="edad_actual"
                         type="number"
-                        placeholder="Ej: 2000"
+                        placeholder="Ej: 30"
                         min="0"
-                        step="0.01"
+                        step="1"
                         required
-                        className={`pl-8 ${validationErrors.costo_vida_mensual ? "border-red-500" : ""}`}
-                        value={formData.costo_vida_mensual || ''}
+                        value={formData.edad_actual || ''}
                         onChange={handleChange}
+                        className={validationErrors.edad_actual ? "border-red-500" : ""}
                       />
-                      {validationErrors.costo_vida_mensual && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.costo_vida_mensual}</p>
+                      {validationErrors.edad_actual && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.edad_actual}</p>
                       )}
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="edad_retiro">Tu Edad de Retiro</Label>
+                      <Input
+                        id="edad_retiro"
+                        name="edad_retiro"
+                        type="number"
+                        placeholder="Ej: 65"
+                        min="0"
+                        step="1"
+                        required
+                        value={formData.edad_retiro || ''}
+                        onChange={handleChange}
+                        className={validationErrors.edad_retiro ? "border-red-500" : ""}
+                      />
+                      {validationErrors.edad_retiro && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.edad_retiro}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="costo_vida_mensual">Tu Costo de Vida Mensual al Retirarte (USD)</Label>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setActiveInfoBox(activeInfoBox === 'costo_vida_mensual' ? null : 'costo_vida_mensual');
+                          }}
+                        >
+                          <InfoIcon className="h-4 w-4 text-stone-500" />
+                          <span className="sr-only">Información sobre Costo de Vida Mensual</span>
+                        </Button>
+                      </div>
+                      {activeInfoBox === 'costo_vida_mensual' && (
+                        <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-5 w-5 p-0 absolute top-2 right-2"
+                            onClick={() => setActiveInfoBox(null)}
+                          >
+                            <XIcon className="h-3 w-3 text-stone-500" />
+                          </Button>
+                          <p className="text-sm text-stone-700 pr-6">
+                            Importe en dólares que estimas gastar mensualmente al momento de encontrarte retirado (cuando no poseas ingresos activos por no estar trabajando).
+                          </p>
+                        </div>
+                      )}
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+                        <Input
+                          id="costo_vida_mensual"
+                          name="costo_vida_mensual"
+                          type="number"
+                          placeholder="Ej: 2000"
+                          min="0"
+                          step="0.01"
+                          required
+                          className={`pl-8 ${validationErrors.costo_vida_mensual ? "border-red-500" : ""}`}
+                          value={formData.costo_vida_mensual || ''}
+                          onChange={handleChange}
+                        />
+                        {validationErrors.costo_vida_mensual && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.costo_vida_mensual}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                
-                <Button type="button" onClick={handleNextTab} className="w-full">
-                  Siguiente
-                </Button>
-              </TabsContent>
+                </motion.div>
+              )}
               
-              <TabsContent value="datos-inversion" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="capital_inicial">Tu Capital Inicial (USD)</Label>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveInfoBox(activeInfoBox === 'capital_inicial' ? null : 'capital_inicial');
-                        }}
-                      >
-                        <InfoIcon className="h-4 w-4 text-stone-500" />
-                        <span className="sr-only">Información sobre Capital Inicial</span>
-                      </Button>
-                    </div>
-                    {activeInfoBox === 'capital_inicial' && (
-                      <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
+              {formStep === 1 && (
+                <motion.div 
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="capital_inicial">Tu Capital Inicial (USD)</Label>
                         <Button 
                           type="button" 
                           variant="ghost" 
                           size="icon" 
-                          className="h-5 w-5 p-0 absolute top-2 right-2"
-                          onClick={() => setActiveInfoBox(null)}
+                          className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setActiveInfoBox(activeInfoBox === 'capital_inicial' ? null : 'capital_inicial');
+                          }}
                         >
-                          <XIcon className="h-3 w-3 text-stone-500" />
+                          <InfoIcon className="h-4 w-4 text-stone-500" />
+                          <span className="sr-only">Información sobre Capital Inicial</span>
                         </Button>
-                        <p className="text-sm text-stone-700 pr-6">
-                          Dinero que ya tienes al momento de comenzar la inversión, que estás dispuesto a invertir y no retirar hasta la pasividad.
-                        </p>
                       </div>
-                    )}
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
-                      <Input
-                        id="capital_inicial"
-                        name="capital_inicial"
-                        type="number"
-                        placeholder="Ej: 10000"
-                        min="0"
-                        step="0.01"
-                        className={`pl-8 ${validationErrors.capital_inicial ? "border-red-500" : ""}`}
-                        value={formData.capital_inicial || ''}
-                        onChange={handleChange}
-                      />
-                      {validationErrors.capital_inicial && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.capital_inicial}</p>
+                      {activeInfoBox === 'capital_inicial' && (
+                        <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-5 w-5 p-0 absolute top-2 right-2"
+                            onClick={() => setActiveInfoBox(null)}
+                          >
+                            <XIcon className="h-3 w-3 text-stone-500" />
+                          </Button>
+                          <p className="text-sm text-stone-700 pr-6">
+                            Dinero que ya tienes al momento de comenzar la inversión, que estás dispuesto a invertir y no retirar hasta la pasividad.
+                          </p>
+                        </div>
                       )}
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+                        <Input
+                          id="capital_inicial"
+                          name="capital_inicial"
+                          type="number"
+                          placeholder="Ej: 10000"
+                          min="0"
+                          step="0.01"
+                          className={`pl-8 ${validationErrors.capital_inicial ? "border-red-500" : ""}`}
+                          value={formData.capital_inicial || ''}
+                          onChange={handleChange}
+                        />
+                        {validationErrors.capital_inicial && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.capital_inicial}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="inversion_mensual">Tu Aporte Mensual (USD)</Label>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveInfoBox(activeInfoBox === 'inversion_mensual' ? null : 'inversion_mensual');
-                        }}
-                      >
-                        <InfoIcon className="h-4 w-4 text-stone-500" />
-                        <span className="sr-only">Información sobre Aporte Mensual</span>
-                      </Button>
-                    </div>
-                    {activeInfoBox === 'inversion_mensual' && (
-                      <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="inversion_mensual">Tu Aporte Mensual (USD)</Label>
                         <Button 
                           type="button" 
                           variant="ghost" 
                           size="icon" 
-                          className="h-5 w-5 p-0 absolute top-2 right-2"
-                          onClick={() => setActiveInfoBox(null)}
+                          className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setActiveInfoBox(activeInfoBox === 'inversion_mensual' ? null : 'inversion_mensual');
+                          }}
                         >
-                          <XIcon className="h-3 w-3 text-stone-500" />
+                          <InfoIcon className="h-4 w-4 text-stone-500" />
+                          <span className="sr-only">Información sobre Aporte Mensual</span>
                         </Button>
-                        <p className="text-sm text-stone-700 pr-6">
-                          Importe promedio que estimas aportar a la inversión mensualmente y sin excepción, para incrementar el monto invertido y aprovechar al máximo los efectos positivos del interés compuesto.
-                        </p>
                       </div>
-                    )}
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
-                      <Input
-                        id="inversion_mensual"
-                        name="inversion_mensual"
-                        type="number"
-                        placeholder="Ej: 500"
-                        min="0"
-                        step="0.01"
-                        className="pl-8"
-                        value={formData.inversion_mensual || ''}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="rendimiento_anual">Rendimiento de Tu Inversión (TNA %)</Label>
-                    <div className="relative flex flex-col space-y-2">
-                      <Select
-                        value={
-                          formData.rendimiento_anual === 3 ? "conservadora" :
-                          formData.rendimiento_anual === 6 ? "moderada" :
-                          formData.rendimiento_anual === 9 ? "arriesgada" :
-                          "otro"
-                        }
-                        onValueChange={(value) => {
-                          if (value === "conservadora") {
-                            setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 3 }));
-                          } else if (value === "moderada") {
-                            setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 6 }));
-                          } else if (value === "arriesgada") {
-                            setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 9 }));
-                          } else if (value === "otro") {
-                            setRendimientoPersonalizado(true);
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleccionar rendimiento" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="conservadora">Conservadora (3%)</SelectItem>
-                          <SelectItem value="moderada">Moderada (6%)</SelectItem>
-                          <SelectItem value="arriesgada">Arriesgada (9%)</SelectItem>
-                          <SelectItem value="otro">Otro valor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      
-                      {rendimientoPersonalizado && (
-                        <div className="relative mt-2">
-                          <Input
-                            id="rendimiento_anual_personalizado"
-                            name="rendimiento_anual_personalizado"
-                            type="number"
-                            placeholder="Ingresa un valor personalizado"
-                            min="0"
-                            step="0.1"
-                            className="pr-8"
-                            value={formData.rendimiento_anual}
-                            onChange={(e) => {
-                              setFormData(prev => ({
-                                ...prev,
-                                rendimiento_anual: parseFloat(e.target.value) || 0
-                              }))
-                            }}
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                      {activeInfoBox === 'inversion_mensual' && (
+                        <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-5 w-5 p-0 absolute top-2 right-2"
+                            onClick={() => setActiveInfoBox(null)}
+                          >
+                            <XIcon className="h-3 w-3 text-stone-500" />
+                          </Button>
+                          <p className="text-sm text-stone-700 pr-6">
+                            Importe promedio que estimas aportar a la inversión mensualmente y sin excepción, para incrementar el monto invertido y aprovechar al máximo los efectos positivos del interés compuesto.
+                          </p>
                         </div>
                       )}
-
-                      {!rendimientoPersonalizado && (
-                        <p className="text-sm text-slate-500 mt-1">
-                          Rendimiento promedio esperado en USD: {formData.rendimiento_anual}%
-                        </p>
-                      )}
-                      
-                      {validationErrors.rendimiento_anual && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.rendimiento_anual}</p>
-                      )}
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+                        <Input
+                          id="inversion_mensual"
+                          name="inversion_mensual"
+                          type="number"
+                          placeholder="Ej: 500"
+                          min="0"
+                          step="0.01"
+                          className="pl-8"
+                          value={formData.inversion_mensual || ''}
+                          onChange={handleChange}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="inflacion_anual">Inflación Anual Esperada (%)</Label>
-                    <div className="relative flex flex-col space-y-2">
-                      <Select
-                        value={
-                          formData.inflacion_anual === 1.5 ? "baja" :
-                          formData.inflacion_anual === 3.5 ? "moderada" :
-                          formData.inflacion_anual === 6 ? "alta" :
-                          "otro"
-                        }
-                        onValueChange={(value) => {
-                          if (value === "baja") {
-                            setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 1.5 }));
-                          } else if (value === "moderada") {
-                            setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 3.5 }));
-                          } else if (value === "alta") {
-                            setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 6 }));
-                          } else if (value === "otro") {
-                            setInflacionPersonalizada(true);
+                    <div className="space-y-2">
+                      <Label htmlFor="rendimiento_anual">Rendimiento de Tu Inversión (TNA %)</Label>
+                      <div className="relative flex flex-col space-y-2">
+                        <Select
+                          value={
+                            formData.rendimiento_anual === 3 ? "conservadora" :
+                            formData.rendimiento_anual === 6 ? "moderada" :
+                            formData.rendimiento_anual === 9 ? "arriesgada" :
+                            "otro"
                           }
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleccionar inflación" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="baja">Baja (1.5%)</SelectItem>
-                          <SelectItem value="moderada">Moderada (3.5%)</SelectItem>
-                          <SelectItem value="alta">Alta (6%)</SelectItem>
-                          <SelectItem value="otro">Otro valor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      
-                      {inflacionPersonalizada && (
-                        <div className="relative mt-2">
-                          <Input
-                            id="inflacion_anual_personalizado"
-                            name="inflacion_anual_personalizado"
-                            type="number"
-                            placeholder="Ingresa un valor personalizado"
-                            min="0"
-                            step="0.1"
-                            className="pr-8"
-                            value={formData.inflacion_anual}
-                            onChange={(e) => {
-                              setFormData(prev => ({
-                                ...prev,
-                                inflacion_anual: parseFloat(e.target.value) || 0
-                              }))
-                            }}
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
-                        </div>
-                      )}
+                          onValueChange={(value) => {
+                            if (value === "conservadora") {
+                              setRendimientoPersonalizado(false);
+                              setFormData(prev => ({ ...prev, rendimiento_anual: 3 }));
+                            } else if (value === "moderada") {
+                              setRendimientoPersonalizado(false);
+                              setFormData(prev => ({ ...prev, rendimiento_anual: 6 }));
+                            } else if (value === "arriesgada") {
+                              setRendimientoPersonalizado(false);
+                              setFormData(prev => ({ ...prev, rendimiento_anual: 9 }));
+                            } else if (value === "otro") {
+                              setRendimientoPersonalizado(true);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Seleccionar rendimiento" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="conservadora">Conservadora (3%)</SelectItem>
+                            <SelectItem value="moderada">Moderada (6%)</SelectItem>
+                            <SelectItem value="arriesgada">Arriesgada (9%)</SelectItem>
+                            <SelectItem value="otro">Otro valor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {rendimientoPersonalizado && (
+                          <div className="relative mt-2">
+                            <Input
+                              id="rendimiento_anual_personalizado"
+                              name="rendimiento_anual_personalizado"
+                              type="number"
+                              placeholder="Ingresa un valor personalizado"
+                              min="0"
+                              step="0.1"
+                              className="pr-8"
+                              value={formData.rendimiento_anual}
+                              onChange={(e) => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  rendimiento_anual: parseFloat(e.target.value) || 0
+                                }))
+                              }}
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                          </div>
+                        )}
 
-                      {!inflacionPersonalizada && (
-                        <p className="text-sm text-slate-500 mt-1">
-                          Inflación promedio esperada en USD: {formData.inflacion_anual}%
-                        </p>
-                      )}
-                      
-                      {validationErrors.inflacion_anual && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.inflacion_anual}</p>
-                      )}
+                        {!rendimientoPersonalizado && (
+                          <p className="text-sm text-slate-500 mt-1">
+                            Rendimiento promedio esperado en USD: {formData.rendimiento_anual}%
+                          </p>
+                        )}
+                        
+                        {validationErrors.rendimiento_anual && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.rendimiento_anual}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="inflacion_anual">Inflación Anual Esperada (%)</Label>
+                      <div className="relative flex flex-col space-y-2">
+                        <Select
+                          value={
+                            formData.inflacion_anual === 1.5 ? "baja" :
+                            formData.inflacion_anual === 3.5 ? "moderada" :
+                            formData.inflacion_anual === 6 ? "alta" :
+                            "otro"
+                          }
+                          onValueChange={(value) => {
+                            if (value === "baja") {
+                              setInflacionPersonalizada(false);
+                              setFormData(prev => ({ ...prev, inflacion_anual: 1.5 }));
+                            } else if (value === "moderada") {
+                              setInflacionPersonalizada(false);
+                              setFormData(prev => ({ ...prev, inflacion_anual: 3.5 }));
+                            } else if (value === "alta") {
+                              setInflacionPersonalizada(false);
+                              setFormData(prev => ({ ...prev, inflacion_anual: 6 }));
+                            } else if (value === "otro") {
+                              setInflacionPersonalizada(true);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Seleccionar inflación" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="baja">Baja (1.5%)</SelectItem>
+                            <SelectItem value="moderada">Moderada (3.5%)</SelectItem>
+                            <SelectItem value="alta">Alta (6%)</SelectItem>
+                            <SelectItem value="otro">Otro valor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {inflacionPersonalizada && (
+                          <div className="relative mt-2">
+                            <Input
+                              id="inflacion_anual_personalizado"
+                              name="inflacion_anual_personalizado"
+                              type="number"
+                              placeholder="Ingresa un valor personalizado"
+                              min="0"
+                              step="0.1"
+                              className="pr-8"
+                              value={formData.inflacion_anual}
+                              onChange={(e) => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  inflacion_anual: parseFloat(e.target.value) || 0
+                                }))
+                              }}
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                          </div>
+                        )}
+
+                        {!inflacionPersonalizada && (
+                          <p className="text-sm text-slate-500 mt-1">
+                            Inflación promedio esperada en USD: {formData.inflacion_anual}%
+                          </p>
+                        )}
+                        
+                        {validationErrors.inflacion_anual && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.inflacion_anual}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex space-x-4">
-                  <Button type="button" onClick={handlePrevTab} className="w-1/2" variant="outline">
-                    Anterior
-                  </Button>
-                  <Button type="submit" className="w-1/2" disabled={isLoading}>
-                    {isLoading ? 'Calculando...' : 'Ver Resultados'}
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </form>
         </CardContent>
+        
+        <CardFooter className="flex flex-col sm:flex-row gap-3 pt-0">
+          {formStep === 0 ? (
+            <Button 
+              type="button" 
+              onClick={handleNextStep} 
+              className="w-full sm:w-auto"
+            >
+              Continuar
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <div className="flex w-full gap-3">
+              <Button 
+                type="button" 
+                onClick={handlePrevStep} 
+                variant="outline"
+                className="flex-1"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver a Datos Personales
+              </Button>
+              <Button 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit(new Event('submit') as unknown as React.FormEvent<HTMLFormElement>);
+                }}
+                className="flex-1"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Calculando...' : 'Proyectar Rendimiento'}
+                <Calculator className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </CardFooter>
       </Card>
 
       {resultados && (
@@ -609,58 +675,121 @@ export default function CalculadoraForm() {
               <CardTitle>Resumen Proyectado de tu Plan de Retiro</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium w-1/3">Capital Inicial:</TableCell>
-                    <TableCell className="w-2/3">{formatCurrency(resultados.capital_inicial)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Aporte Mensual:</TableCell>
-                    <TableCell>{formatCurrency(resultados.inversion_mensual)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Total Aportado:</TableCell>
-                    <TableCell>{formatCurrency(resultados.total_aportes_mensuales)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-stone-50">
-                    <TableCell className="font-medium">Total Invertido:</TableCell>
-                    <TableCell>{formatCurrency(resultados.total_invertido)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-green-50">
-                    <TableCell className="font-medium">Monto Final:</TableCell>
-                    <TableCell>{formatCurrency(resultados.monto_total)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-blue-50">
-                    <TableCell className="font-medium">Ganancia Neta:</TableCell>
-                    <TableCell>{formatCurrency(resultados.ganancia_neta)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-orange-50">
-                    <TableCell className="font-medium">Costo de Vida Mensual Actual:</TableCell>
-                    <TableCell>{formatCurrency(resultados.costo_vida_inicial)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-orange-100">
-                    <TableCell className="font-medium">Costo de Vida Mensual al Retirarse:</TableCell>
-                    <TableCell>{formatCurrency(resultados.costo_vida_actualizado)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-yellow-50">
-                    <TableCell className="font-medium">Años de Retiro Posibles:</TableCell>
-                    <TableCell>{formatYears(resultados.anios_retiro)}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+              {/* Resultados principales destacados en tarjetas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col shadow-sm">
+                  <span className="text-stone-600 text-sm font-medium mb-1">MONTO FINAL ACUMULADO</span>
+                  <span className="text-stone-900 text-2xl font-bold">{formatCurrency(resultados.monto_total)}</span>
+                  <span className="text-stone-600 text-sm mt-2">Total a la edad de {formData.edad_retiro} años</span>
+                </div>
+                
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col shadow-sm relative overflow-hidden">
+                  <div className="absolute inset-0 bg-primary/5"></div>
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+                  <span className="text-primary text-sm font-semibold mb-1 relative z-10">GANANCIA NETA OBTENIDA</span>
+                  <span className="text-stone-900 text-2xl font-bold relative z-10">{formatCurrency(resultados.ganancia_neta)}</span>
+                  <span className="text-primary-700 text-sm mt-2 relative z-10">+{((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(0)}% sobre capital invertido</span>
+                </div>
+                
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col shadow-sm">
+                  <span className="text-stone-600 text-sm font-medium mb-1">DURACIÓN DE TU CAPITAL</span>
+                  <span className="text-stone-900 text-2xl font-bold">{formatYears(resultados.anios_retiro)}</span>
+                  <span className="text-stone-600 text-sm mt-2">{resultados.anios_retiro === "∞" ? "Tu capital se mantendrá indefinidamente" : "Tiempo estimado antes de agotar el capital"}</span>
+                </div>
+              </div>
               
-              {/* Mensaje de retiro separado de la tabla para mejor formato */}
-              <div className="mt-4 p-4 bg-stone-50 rounded-lg border border-stone-100">
+              {/* Intereses mensuales vs Costo de vida */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col">
+                  <span className="text-stone-600 text-sm font-medium mb-1">COSTO DE VIDA MENSUAL AL RETIRARTE</span>
+                  <span className="text-stone-900 text-2xl font-bold">{formatCurrency(resultados.costo_vida_actualizado)}</span>
+                  <span className="text-stone-600 text-sm mt-2">Actualizado por inflación anual del {formData.inflacion_anual}%</span>
+                </div>
+                
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col">
+                  <span className="text-stone-600 text-sm font-medium mb-1">INTERESES MENSUALES GENERADOS</span>
+                  <span className="text-stone-900 text-2xl font-bold">{formatCurrency(resultados.monto_total * (formData.rendimiento_anual / 100 / 12))}</span>
+                  <span className="text-stone-600 text-sm mt-2">
+                    {resultados.monto_total * (formData.rendimiento_anual / 100 / 12) >= resultados.costo_vida_actualizado 
+                      ? "Suficientes para cubrir tu costo de vida" 
+                      : "Insuficientes para tu costo de vida, necesitarás ir consumiendo capital"}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Tabla de detalles adicionales */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-stone-800 mb-3">Detalles de tu inversión</h3>
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium w-1/3">Capital Inicial:</TableCell>
+                      <TableCell className="w-2/3">{formatCurrency(resultados.capital_inicial)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Aporte Mensual:</TableCell>
+                      <TableCell>{formatCurrency(resultados.inversion_mensual)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Total Aportado:</TableCell>
+                      <TableCell>{formatCurrency(resultados.total_aportes_mensuales)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Total Invertido:</TableCell>
+                      <TableCell>{formatCurrency(resultados.total_invertido)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Costo de Vida Mensual Actual:</TableCell>
+                      <TableCell>{formatCurrency(resultados.costo_vida_inicial)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Mensaje de retiro con explicación mejorada */}
+              <div className="mb-6 p-4 bg-stone-50 rounded-lg border border-stone-200">
                 <p className="text-center text-stone-700">
-                  {resultados.mensaje_retiro}
+                  {resultados.anios_retiro === "∞" ? 
+                    `¡Excelente! Tu capital no se agotará nunca porque tus intereses mensuales (${formatCurrency(resultados.monto_total * formData.rendimiento_anual / 100 / 12)}) superan tu costo de vida proyectado (${formatCurrency(resultados.costo_vida_actualizado)}).` : 
+                    `Con un capital acumulado de ${formatCurrency(resultados.monto_total)}, podrás mantener tu nivel de vida durante ${formatYears(resultados.anios_retiro)} retirando mensualmente ${formatCurrency(resultados.costo_vida_actualizado)} para cubrir tus gastos.`
+                  }
+                </p>
+                
+                {resultados.anios_retiro !== "∞" && (
+                  <div className="mt-4 pt-4 border-t border-stone-200">
+                    <p className="text-center text-stone-700">
+                      {(() => {
+                        // Calcular el capital necesario para vivir solo de intereses
+                        const capitalNecesario = resultados.costo_vida_actualizado * 12 / (formData.rendimiento_anual / 100);
+                        
+                        // Calcular el aporte mensual necesario para alcanzar ese capital
+                        const totalMeses = (formData.edad_retiro - formData.edad_actual) * 12;
+                        const tasaMensual = formData.rendimiento_anual / 100 / 12;
+                        
+                        // Fórmula de aportes periódicos con interés compuesto resuelto para el aporte mensual
+                        // PMT = (FV - PV * (1 + r)^n) / (((1 + r)^n - 1) / r)
+                        const factorCapitalInicial = Math.pow(1 + tasaMensual, totalMeses);
+                        const factorAportes = (factorCapitalInicial - 1) / tasaMensual;
+                        const aporteNecesario = (capitalNecesario - formData.capital_inicial * factorCapitalInicial) / factorAportes;
+                        
+                        return `Para vivir exclusivamente de los intereses sin consumir capital, necesitarías acumular ${formatCurrency(capitalNecesario)}. Para alcanzar este monto en ${formData.edad_retiro - formData.edad_actual} años, deberías haber aportado aproximadamente ${formatCurrency(Math.max(0, aporteNecesario))} mensuales a tu inversión.`;
+                      })()}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 bg-stone-50 rounded-lg border border-stone-200 mb-6 text-center">
+                <p className="text-stone-700">
+                  <span className="font-semibold">La magia del interés compuesto</span> transforma el tiempo en dinero. En {formData.edad_retiro - formData.edad_actual} años, has multiplicado tu inversión y generado {formatCurrency(resultados.ganancia_neta)} adicionales. Una rentabilidad del {((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(2)}% sobre tu capital invertido, demostrando que la constancia y la paciencia son la clave de la libertad financiera.
                 </p>
               </div>
               
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-center text-stone-700">
-                  <span className="font-semibold">La magia del interés compuesto:</span> Gracias a haber invertido tu dinero durante {formData.edad_retiro - formData.edad_actual} años, has obtenido {formatCurrency(resultados.ganancia_neta)} adicionales a tu inversión inicial. 
-                  Esto representa un {((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(2)}% de rendimiento sobre el capital total invertido.
+              {/* Disclaimer */}
+              <div className="mt-8 p-4 bg-stone-50 rounded-lg border border-stone-200">
+                <h4 className="font-medium text-stone-800 mb-2 text-sm">AVISO IMPORTANTE</h4>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Esta calculadora proporciona estimaciones con fines exclusivamente educativos e informativos. Los resultados mostrados no constituyen asesoramiento financiero ni garantía de rendimiento futuro. Los rendimientos de las inversiones son variables y pueden fluctuar significativamente en función de numerosos factores de mercado. Las proyecciones presentadas ilustran el potencial del interés compuesto a largo plazo, pero se basan en tasas fijas que no reflejan la volatilidad real de los mercados financieros. Los cálculos no consideran factores como impuestos, comisiones, cambios regulatorios o condiciones económicas imprevistas. Antes de tomar cualquier decisión de inversión, se recomienda consultar con un asesor financiero cualificado. Al utilizar esta herramienta, reconoces que las proyecciones son hipotéticas y no responsabilizas a los creadores por decisiones financieras tomadas con base en estos resultados.
                 </p>
               </div>
             </CardContent>
