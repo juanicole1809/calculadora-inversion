@@ -1,0 +1,1375 @@
+commit c95adb555d7be4de3f57501bb701d6c6ad5e227b
+Author: Juan Colella <cole1809@MacBook-Air-de-Juan.local>
+Date:   Mon Mar 17 01:19:38 2025 -0300
+
+    Versionando 0.2: incluye tabs para división de datos personales y de inversión, además de mejoras menores
+
+diff --git a/package-lock.json b/package-lock.json
+index 85e393e..6be1f01 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -11,6 +11,8 @@
+         "@hookform/resolvers": "^3.3.4",
+         "@radix-ui/react-label": "^2.0.2",
+         "@radix-ui/react-slot": "^1.0.2",
++        "@radix-ui/react-tabs": "^1.1.3",
++        "@radix-ui/react-tooltip": "^1.1.8",
+         "class-variance-authority": "^0.7.0",
+         "clsx": "^2.1.0",
+         "lucide-react": "^0.344.0",
+@@ -97,6 +99,44 @@
+         "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
+       }
+     },
++    "node_modules/@floating-ui/core": {
++      "version": "1.6.9",
++      "resolved": "https://registry.npmjs.org/@floating-ui/core/-/core-1.6.9.tgz",
++      "integrity": "sha512-uMXCuQ3BItDUbAMhIXw7UPXRfAlOAvZzdK9BWpE60MCn+Svt3aLn9jsPTi/WNGlRUu2uI0v5S7JiIUsbsvh3fw==",
++      "license": "MIT",
++      "dependencies": {
++        "@floating-ui/utils": "^0.2.9"
++      }
++    },
++    "node_modules/@floating-ui/dom": {
++      "version": "1.6.13",
++      "resolved": "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.6.13.tgz",
++      "integrity": "sha512-umqzocjDgNRGTuO7Q8CU32dkHkECqI8ZdMZ5Swb6QAM0t5rnlrN3lGo1hdpscRd3WS8T6DKYK4ephgIH9iRh3w==",
++      "license": "MIT",
++      "dependencies": {
++        "@floating-ui/core": "^1.6.0",
++        "@floating-ui/utils": "^0.2.9"
++      }
++    },
++    "node_modules/@floating-ui/react-dom": {
++      "version": "2.1.2",
++      "resolved": "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.2.tgz",
++      "integrity": "sha512-06okr5cgPzMNBy+Ycse2A6udMi4bqwW/zgBF/rwjcNqWkyr82Mcg8b0vjX8OJpZFy/FKjJmw6wV7t44kK6kW7A==",
++      "license": "MIT",
++      "dependencies": {
++        "@floating-ui/dom": "^1.0.0"
++      },
++      "peerDependencies": {
++        "react": ">=16.8.0",
++        "react-dom": ">=16.8.0"
++      }
++    },
++    "node_modules/@floating-ui/utils": {
++      "version": "0.2.9",
++      "resolved": "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.9.tgz",
++      "integrity": "sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==",
++      "license": "MIT"
++    },
+     "node_modules/@hookform/resolvers": {
+       "version": "3.10.0",
+       "resolved": "https://registry.npmjs.org/@hookform/resolvers/-/resolvers-3.10.0.tgz",
+@@ -451,6 +491,61 @@
+         "node": ">=14"
+       }
+     },
++    "node_modules/@radix-ui/primitive": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.1.1.tgz",
++      "integrity": "sha512-SJ31y+Q/zAyShtXJc8x83i9TYdbAfHZ++tUZnvjJJqFjzsdUnKsxPL6IEtBlxKkU7yzer//GQtZSV4GbldL3YA==",
++      "license": "MIT"
++    },
++    "node_modules/@radix-ui/react-arrow": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-arrow/-/react-arrow-1.1.2.tgz",
++      "integrity": "sha512-G+KcpzXHq24iH0uGG/pF8LyzpFJYGD4RfLjCIBfGdSLXvjLHST31RUiRVrupIBMvIppMgSzQ6l66iAxl03tdlg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.0.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-collection": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-collection/-/react-collection-1.1.2.tgz",
++      "integrity": "sha512-9z54IEKRxIa9VityapoEYMuByaG42iSy1ZXlY2KcuLSEtq8x4987/N6m15ppoMffgZX72gER2uHe1D9Y6Unlcw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.1",
++        "@radix-ui/react-context": "1.1.1",
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-slot": "1.1.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-compose-refs": {
+       "version": "1.1.1",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.1.tgz",
+@@ -466,6 +561,81 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-context": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.1.1.tgz",
++      "integrity": "sha512-UASk9zi+crv9WteK/NU4PLvOoL3OuE6BWVKNF6hPRBtYBDXQ2u5iu3O59zUlJiTVvkyuycnqrztsHVJwcK9K+Q==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-direction": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-direction/-/react-direction-1.1.0.tgz",
++      "integrity": "sha512-BUuBvgThEiAXh2DWu93XsT+a3aWrGqolGlqqw5VU1kG7p/ZH2cuDlM1sRLNnY3QcBS69UIz2mcKhMxDsdewhjg==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.5",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.5.tgz",
++      "integrity": "sha512-E4TywXY6UsXNRhFrECa5HAvE5/4BFcGyfTyK36gP+pAW1ed7UTK4vKwdr53gAJYwqbfCWC6ATvJa3J3R/9+Qrg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.1",
++        "@radix-ui/react-compose-refs": "1.1.1",
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-use-callback-ref": "1.1.0",
++        "@radix-ui/react-use-escape-keydown": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-id": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.1.0.tgz",
++      "integrity": "sha512-EJUrI8yYh7WOjNOqpoJaf1jlFIH2LvtgAl+YcFqNCa+4hj64ZXmPkAKOFs/ukjz3byN6bdb/AVUqHkI8/uWWMA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-label": {
+       "version": "2.1.2",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-label/-/react-label-2.1.2.tgz",
+@@ -489,6 +659,86 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-popper": {
++      "version": "1.2.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-popper/-/react-popper-1.2.2.tgz",
++      "integrity": "sha512-Rvqc3nOpwseCyj/rgjlJDYAgyfw7OC1tTkKn2ivhaMGcYt8FSBlahHOZak2i3QwkRXUXgGgzeEe2RuqeEHuHgA==",
++      "license": "MIT",
++      "dependencies": {
++        "@floating-ui/react-dom": "^2.0.0",
++        "@radix-ui/react-arrow": "1.1.2",
++        "@radix-ui/react-compose-refs": "1.1.1",
++        "@radix-ui/react-context": "1.1.1",
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-use-callback-ref": "1.1.0",
++        "@radix-ui/react-use-layout-effect": "1.1.0",
++        "@radix-ui/react-use-rect": "1.1.0",
++        "@radix-ui/react-use-size": "1.1.0",
++        "@radix-ui/rect": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-portal": {
++      "version": "1.1.4",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.4.tgz",
++      "integrity": "sha512-sn2O9k1rPFYVyKd5LAJfo96JlSGVFpa1fS6UuBJfrZadudiw5tAmru+n1x7aMRQ84qDM71Zh1+SzK5QwU0tJfA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-use-layout-effect": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-presence": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.2.tgz",
++      "integrity": "sha512-18TFr80t5EVgL9x1SwF/YGtfG+l0BS0PRAlCWBDoBEiDQjeKgnNZRVJp/oVBl24sr3Gbfwc/Qpj4OcWTQMsAEg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.1",
++        "@radix-ui/react-use-layout-effect": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-primitive": {
+       "version": "2.0.2",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.0.2.tgz",
+@@ -512,6 +762,37 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-roving-focus": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-roving-focus/-/react-roving-focus-1.1.2.tgz",
++      "integrity": "sha512-zgMQWkNO169GtGqRvYrzb0Zf8NhMHS2DuEB/TiEmVnpr5OqPU3i8lfbxaAmC2J/KYuIQxyoQQ6DxepyXp61/xw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.1",
++        "@radix-ui/react-collection": "1.1.2",
++        "@radix-ui/react-compose-refs": "1.1.1",
++        "@radix-ui/react-context": "1.1.1",
++        "@radix-ui/react-direction": "1.1.0",
++        "@radix-ui/react-id": "1.1.0",
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-use-callback-ref": "1.1.0",
++        "@radix-ui/react-use-controllable-state": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-slot": {
+       "version": "1.1.2",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.1.2.tgz",
+@@ -530,6 +811,201 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-tabs": {
++      "version": "1.1.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-tabs/-/react-tabs-1.1.3.tgz",
++      "integrity": "sha512-9mFyI30cuRDImbmFF6O2KUJdgEOsGh9Vmx9x/Dh9tOhL7BngmQPQfwW4aejKm5OHpfWIdmeV6ySyuxoOGjtNng==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.1",
++        "@radix-ui/react-context": "1.1.1",
++        "@radix-ui/react-direction": "1.1.0",
++        "@radix-ui/react-id": "1.1.0",
++        "@radix-ui/react-presence": "1.1.2",
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-roving-focus": "1.1.2",
++        "@radix-ui/react-use-controllable-state": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-tooltip": {
++      "version": "1.1.8",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-tooltip/-/react-tooltip-1.1.8.tgz",
++      "integrity": "sha512-YAA2cu48EkJZdAMHC0dqo9kialOcRStbtiY4nJPaht7Ptrhcvpo+eDChaM6BIs8kL6a8Z5l5poiqLnXcNduOkA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.1",
++        "@radix-ui/react-compose-refs": "1.1.1",
++        "@radix-ui/react-context": "1.1.1",
++        "@radix-ui/react-dismissable-layer": "1.1.5",
++        "@radix-ui/react-id": "1.1.0",
++        "@radix-ui/react-popper": "1.2.2",
++        "@radix-ui/react-portal": "1.1.4",
++        "@radix-ui/react-presence": "1.1.2",
++        "@radix-ui/react-primitive": "2.0.2",
++        "@radix-ui/react-slot": "1.1.2",
++        "@radix-ui/react-use-controllable-state": "1.1.0",
++        "@radix-ui/react-visually-hidden": "1.1.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-callback-ref": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.0.tgz",
++      "integrity": "sha512-CasTfvsy+frcFkbXtSJ2Zu9JHpN8TYKxkgJGWbjiZhFivxaeW7rMeZt7QELGVLaYVfFMsKHjb7Ak0nMEe+2Vfw==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-controllable-state": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.1.0.tgz",
++      "integrity": "sha512-MtfMVJiSr2NjzS0Aa90NPTnvTSg6C/JLCV7ma0W6+OMV78vd8OyRpID+Ng9LxzsPbLeuBnWBA1Nq30AtBIDChw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-callback-ref": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-escape-keydown": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-escape-keydown/-/react-use-escape-keydown-1.1.0.tgz",
++      "integrity": "sha512-L7vwWlR1kTTQ3oh7g1O0CBF3YCyyTj8NmhLR+phShpyA50HCfBFKVJTpshm9PzLiKmehsrQzTYTpX9HvmC9rhw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-callback-ref": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-layout-effect": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.1.0.tgz",
++      "integrity": "sha512-+FPE0rOdziWSrH9athwI1R0HDVbWlEhd+FR+aSDk4uWGmSJ9Z54sdZVDQPZAinJhJXwfT+qnj969mCsT2gfm5w==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-rect": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-rect/-/react-use-rect-1.1.0.tgz",
++      "integrity": "sha512-0Fmkebhr6PiseyZlYAOtLS+nb7jLmpqTrJyv61Pe68MKYW6OWdRE2kI70TaYY27u7H0lajqM3hSMMLFq18Z7nQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/rect": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-size": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-size/-/react-use-size-1.1.0.tgz",
++      "integrity": "sha512-XW3/vWuIXHa+2Uwcc2ABSfcCledmXhhQPlGbfcRXbiUQI5Icjcg19BGCZVKKInYbvUCut/ufbbLLPFC5cbb1hw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-visually-hidden": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-visually-hidden/-/react-visually-hidden-1.1.2.tgz",
++      "integrity": "sha512-1SzA4ns2M1aRlvxErqhLHsBHoS5eI5UUcI2awAMgGUp4LoaoWOKYmvqDY2s/tltuPkh3Yk77YF/r3IRj+Amx4Q==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.0.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/rect": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/rect/-/rect-1.1.0.tgz",
++      "integrity": "sha512-A9+lCBZoaMJlVKcRBz2YByCG+Cp2t6nAnMnNba+XiWxnj6r4JUFqfsgwocMBZU9LPtdxC6wB56ySYpc7LQIoJg==",
++      "license": "MIT"
++    },
+     "node_modules/@rtsao/scc": {
+       "version": "1.1.0",
+       "resolved": "https://registry.npmjs.org/@rtsao/scc/-/scc-1.1.0.tgz",
+diff --git a/package.json b/package.json
+index 12776bd..5b59ed6 100644
+--- a/package.json
++++ b/package.json
+@@ -12,6 +12,8 @@
+     "@hookform/resolvers": "^3.3.4",
+     "@radix-ui/react-label": "^2.0.2",
+     "@radix-ui/react-slot": "^1.0.2",
++    "@radix-ui/react-tabs": "^1.1.3",
++    "@radix-ui/react-tooltip": "^1.1.8",
+     "class-variance-authority": "^0.7.0",
+     "clsx": "^2.1.0",
+     "lucide-react": "^0.344.0",
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 1aae6f4..bfd92e4 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -2,8 +2,8 @@ import type { Metadata } from "next";
+ import "./globals.css";
+ 
+ export const metadata: Metadata = {
+-  title: "Calculadora de Inversión",
+-  description: "Calcula el potencial de tus inversiones con interés compuesto",
++  title: "Calculadora de Retiro",
++  description: "Calcula el rendimiento de tus inversiones para garantizar un retiro cómodo según tu estilo de vida deseado",
+ };
+ 
+ export default function RootLayout({
+diff --git a/src/components/CalculadoraForm.tsx b/src/components/CalculadoraForm.tsx
+index a047915..c096744 100644
+--- a/src/components/CalculadoraForm.tsx
++++ b/src/components/CalculadoraForm.tsx
+@@ -6,6 +6,8 @@ import { Input } from './ui/input'
+ import { Button } from './ui/button'
+ import { Label } from './ui/label'
+ import { Table, TableBody, TableCell, TableRow } from './ui/table'
++import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
++import { InfoIcon, XIcon, RefreshCw } from 'lucide-react'
+ 
+ interface ResultadosInversion {
+   capital_inicial: number
+@@ -18,22 +20,77 @@ interface ResultadosInversion {
+   mensaje_retiro: string
+ }
+ 
++interface FormData {
++  // Datos personales
++  edad_actual: number
++  edad_retiro: number
++  costo_vida_mensual: number
++  // Datos de inversión
++  capital_inicial: number
++  inversion_mensual: number
++  rendimiento_anual: number
++  inflacion_anual: number
++}
++
+ export default function CalculadoraForm() {
+   const [isLoading, setIsLoading] = useState(false)
+   const [resultados, setResultados] = useState<ResultadosInversion | null>(null)
++  const [formData, setFormData] = useState<FormData>({
++    edad_actual: 0,
++    edad_retiro: 0,
++    costo_vida_mensual: 0,
++    capital_inicial: 0,
++    inversion_mensual: 0,
++    rendimiento_anual: 0,
++    inflacion_anual: 3 // Valor por defecto
++  })
++  const [activeTab, setActiveTab] = useState('datos-personales')
++  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
++  const [activeInfoBox, setActiveInfoBox] = useState<string | null>(null)
++
++  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
++    const { name, value } = e.target
++    setFormData(prev => ({
++      ...prev,
++      [name]: parseFloat(value) || 0
++    }))
++    
++    // Limpiar error de validación cuando el usuario modifica el campo
++    if (validationErrors[name]) {
++      setValidationErrors(prev => {
++        const newErrors = { ...prev }
++        delete newErrors[name]
++        return newErrors
++      })
++    }
++  }
+ 
+   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+     e.preventDefault()
++    
++    // Validar todos los campos antes de enviar
++    const errors = validateAllFields()
++    if (Object.keys(errors).length > 0) {
++      setValidationErrors(errors)
++      // Si hay errores en la pestaña de datos personales, cambiar a esa pestaña
++      if (errors.edad_actual || errors.edad_retiro || errors.costo_vida_mensual) {
++        setActiveTab('datos-personales')
++      }
++      return
++    }
++    
+     setIsLoading(true)
+ 
+-    const formData = new FormData(e.currentTarget)
++    // Calcular total_anios basado en edad_actual y edad_retiro
++    const total_anios = formData.edad_retiro - formData.edad_actual
++
+     const data = {
+-      capital_inicial: parseFloat(formData.get('capital_inicial') as string),
+-      inversion_mensual: parseFloat(formData.get('inversion_mensual') as string),
+-      tasa_anual: parseFloat(formData.get('tasa_anual') as string),
+-      inflacion_anual: parseFloat(formData.get('inflacion_anual') as string),
+-      total_anios: parseFloat(formData.get('total_anios') as string),
+-      costo_vida_mensual: parseFloat(formData.get('costo_vida_mensual') as string),
++      capital_inicial: formData.capital_inicial,
++      inversion_mensual: formData.inversion_mensual,
++      tasa_anual: formData.rendimiento_anual,
++      inflacion_anual: formData.inflacion_anual,
++      total_anios: total_anios,
++      costo_vida_mensual: formData.costo_vida_mensual,
+     }
+ 
+     try {
+@@ -47,6 +104,23 @@ export default function CalculadoraForm() {
+ 
+       if (!response.ok) throw new Error('Error en el cálculo')
+       const result = await response.json()
++      
++      // Mejorar el mensaje de retiro cuando el capital no se agotará
++      if (result.anios_retiro === "∞") {
++        // Extraer los valores de intereses mensuales y retiros mensuales del mensaje original
++        const mensajeOriginal = result.mensaje_retiro;
++        // Buscar los valores numéricos en el mensaje
++        const interesesMatch = mensajeOriginal.match(/\$(\d+(\.\d+)?)/);
++        const retirosMatch = mensajeOriginal.match(/\$(\d+(\.\d+)?)\)/);
++        
++        if (interesesMatch && retirosMatch) {
++          const interesesMensuales = parseFloat(interesesMatch[1]);
++          const retirosMensuales = parseFloat(retirosMatch[1]);
++          
++          result.mensaje_retiro = `¡Excelente noticia! Tu capital no se agotará nunca, ya que el dinero que recibirás mensualmente producto de los intereses (${formatCurrency(interesesMensuales)}) será mayor que lo que necesitas retirar para cubrir tus gastos según el costo de vida indicado (${formatCurrency(retirosMensuales)}).`;
++        }
++      }
++      
+       setResultados(result)
+     } catch (error) {
+       console.error('Error:', error)
+@@ -56,6 +130,33 @@ export default function CalculadoraForm() {
+     }
+   }
+ 
++  const validateAllFields = () => {
++    const errors: Record<string, string> = {}
++    
++    // Validar datos personales
++    if (!formData.edad_actual) errors.edad_actual = "La edad actual es requerida"
++    if (!formData.edad_retiro) errors.edad_retiro = "La edad de retiro es requerida"
++    if (formData.edad_retiro <= formData.edad_actual) errors.edad_retiro = "La edad de retiro debe ser mayor a la edad actual"
++    if (!formData.costo_vida_mensual) errors.costo_vida_mensual = "El costo de vida mensual es requerido"
++    
++    // Validar datos de inversión
++    if (!formData.capital_inicial && !formData.inversion_mensual) errors.capital_inicial = "Debes ingresar al menos un capital inicial o un aporte mensual"
++    if (!formData.rendimiento_anual) errors.rendimiento_anual = "El rendimiento de la inversión es requerido"
++    
++    return errors
++  }
++  
++  const validatePersonalData = () => {
++    const errors: Record<string, string> = {}
++    
++    if (!formData.edad_actual) errors.edad_actual = "La edad actual es requerida"
++    if (!formData.edad_retiro) errors.edad_retiro = "La edad de retiro es requerida"
++    if (formData.edad_retiro <= formData.edad_actual) errors.edad_retiro = "La edad de retiro debe ser mayor a la edad actual"
++    if (!formData.costo_vida_mensual) errors.costo_vida_mensual = "El costo de vida mensual es requerido"
++    
++    return errors
++  }
++
+   const formatCurrency = (number: number) => {
+     return new Intl.NumberFormat('es-ES', {
+       style: 'currency',
+@@ -71,12 +172,40 @@ export default function CalculadoraForm() {
+       }).format(years) + ' años'
+   }
+ 
++  const handleNextTab = () => {
++    // Validar datos personales antes de avanzar
++    const errors = validatePersonalData()
++    if (Object.keys(errors).length > 0) {
++      setValidationErrors(errors)
++      return
++    }
++    
++    setActiveTab('datos-inversion')
++  }
++
++  const handlePrevTab = () => {
++    setActiveTab('datos-personales')
++  }
++
++  const handleReset = () => {
++    setFormData(prev => ({
++      ...prev,
++      capital_inicial: 0,
++      inversion_mensual: 0,
++      rendimiento_anual: 0
++      // Mantenemos los datos personales y la inflación
++    }))
++    setValidationErrors({})
++    setResultados(null)
++    setActiveTab('datos-inversion')
++  }
++
+   return (
+     <div className="container mx-auto max-w-4xl px-4 py-8">
+       <div className="text-center mb-8">
+-        <h1 className="text-4xl font-bold text-stone-900 mb-4">Calculadora de Inversión</h1>
++        <h1 className="text-4xl font-bold text-stone-900 mb-4">Calculadora de Retiro</h1>
+         <p className="text-lg text-stone-600">
+-          Planifica tu futuro financiero calculando el potencial de tus inversiones con interés compuesto
++          Planifica tu futuro financiero calculando el potencial de tus ahorros para un retiro cómodo
+         </p>
+       </div>
+ 
+@@ -84,164 +213,343 @@ export default function CalculadoraForm() {
+         <CardHeader>
+           <CardTitle>Ingresa tus datos</CardTitle>
+           <CardDescription>
+-            Completa todos los campos para calcular tu inversión
++            Completa todos los campos para calcular tu plan de retiro
+           </CardDescription>
+         </CardHeader>
+         <CardContent>
+           <form onSubmit={handleSubmit} className="space-y-6">
+-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+-              <div className="space-y-2">
+-                <Label htmlFor="capital_inicial">Capital Inicial (USD)</Label>
+-                <div className="relative">
+-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+-                  <Input
+-                    id="capital_inicial"
+-                    name="capital_inicial"
+-                    type="number"
+-                    placeholder="Ej: 10000"
+-                    min="0"
+-                    step="0.01"
+-                    required
+-                    className="pl-8"
+-                  />
+-                </div>
+-              </div>
++            <Tabs value={activeTab} onValueChange={setActiveTab}>
++              <TabsList className="grid w-full grid-cols-2">
++                <TabsTrigger value="datos-personales">Datos Personales</TabsTrigger>
++                <TabsTrigger value="datos-inversion">Datos de Inversión</TabsTrigger>
++              </TabsList>
++              
++              <TabsContent value="datos-personales" className="space-y-6">
++                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
++                  <div className="space-y-2">
++                    <Label htmlFor="edad_actual">Edad Actual</Label>
++                    <Input
++                      id="edad_actual"
++                      name="edad_actual"
++                      type="number"
++                      placeholder="Ej: 30"
++                      min="0"
++                      step="1"
++                      required
++                      value={formData.edad_actual || ''}
++                      onChange={handleChange}
++                      className={validationErrors.edad_actual ? "border-red-500" : ""}
++                    />
++                    {validationErrors.edad_actual && (
++                      <p className="text-red-500 text-sm mt-1">{validationErrors.edad_actual}</p>
++                    )}
++                  </div>
+ 
+-              <div className="space-y-2">
+-                <Label htmlFor="inversion_mensual">Aporte Mensual (USD)</Label>
+-                <div className="relative">
+-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+-                  <Input
+-                    id="inversion_mensual"
+-                    name="inversion_mensual"
+-                    type="number"
+-                    placeholder="Ej: 500"
+-                    min="0"
+-                    step="0.01"
+-                    required
+-                    className="pl-8"
+-                  />
+-                </div>
+-              </div>
++                  <div className="space-y-2">
++                    <Label htmlFor="edad_retiro">Edad de Retiro</Label>
++                    <Input
++                      id="edad_retiro"
++                      name="edad_retiro"
++                      type="number"
++                      placeholder="Ej: 65"
++                      min="0"
++                      step="1"
++                      required
++                      value={formData.edad_retiro || ''}
++                      onChange={handleChange}
++                      className={validationErrors.edad_retiro ? "border-red-500" : ""}
++                    />
++                    {validationErrors.edad_retiro && (
++                      <p className="text-red-500 text-sm mt-1">{validationErrors.edad_retiro}</p>
++                    )}
++                  </div>
+ 
+-              <div className="space-y-2">
+-                <Label htmlFor="tasa_anual">Tasa de Interés Anual (TNA %)</Label>
+-                <div className="relative">
+-                  <Input
+-                    id="tasa_anual"
+-                    name="tasa_anual"
+-                    type="number"
+-                    placeholder="Ej: 6.25"
+-                    min="0"
+-                    step="0.01"
+-                    required
+-                    className="pr-8"
+-                  />
+-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
++                  <div className="space-y-2 md:col-span-2">
++                    <div className="flex items-center gap-2">
++                      <Label htmlFor="costo_vida_mensual">Costo de Vida Mensual al Retirarse (USD)</Label>
++                      <Button 
++                        type="button" 
++                        variant="ghost" 
++                        size="icon" 
++                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
++                        onClick={(e) => {
++                          e.preventDefault();
++                          setActiveInfoBox(activeInfoBox === 'costo_vida_mensual' ? null : 'costo_vida_mensual');
++                        }}
++                      >
++                        <InfoIcon className="h-4 w-4 text-stone-500" />
++                        <span className="sr-only">Información sobre Costo de Vida Mensual</span>
++                      </Button>
++                    </div>
++                    {activeInfoBox === 'costo_vida_mensual' && (
++                      <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
++                        <Button 
++                          type="button" 
++                          variant="ghost" 
++                          size="icon" 
++                          className="h-5 w-5 p-0 absolute top-2 right-2"
++                          onClick={() => setActiveInfoBox(null)}
++                        >
++                          <XIcon className="h-3 w-3 text-stone-500" />
++                        </Button>
++                        <p className="text-sm text-stone-700 pr-6">
++                          Importe en dólares que estimas gastar mensualmente al momento de encontrarte retirado (cuando no poseas ingresos activos por no estar trabajando).
++                        </p>
++                      </div>
++                    )}
++                    <div className="relative">
++                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
++                      <Input
++                        id="costo_vida_mensual"
++                        name="costo_vida_mensual"
++                        type="number"
++                        placeholder="Ej: 2000"
++                        min="0"
++                        step="0.01"
++                        required
++                        className={`pl-8 ${validationErrors.costo_vida_mensual ? "border-red-500" : ""}`}
++                        value={formData.costo_vida_mensual || ''}
++                        onChange={handleChange}
++                      />
++                      {validationErrors.costo_vida_mensual && (
++                        <p className="text-red-500 text-sm mt-1">{validationErrors.costo_vida_mensual}</p>
++                      )}
++                    </div>
++                  </div>
+                 </div>
+-              </div>
++                
++                <Button type="button" onClick={handleNextTab} className="w-full">
++                  Siguiente
++                </Button>
++              </TabsContent>
++              
++              <TabsContent value="datos-inversion" className="space-y-6">
++                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
++                  <div className="space-y-2">
++                    <div className="flex items-center gap-2">
++                      <Label htmlFor="capital_inicial">Capital Inicial (USD)</Label>
++                      <Button 
++                        type="button" 
++                        variant="ghost" 
++                        size="icon" 
++                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
++                        onClick={(e) => {
++                          e.preventDefault();
++                          setActiveInfoBox(activeInfoBox === 'capital_inicial' ? null : 'capital_inicial');
++                        }}
++                      >
++                        <InfoIcon className="h-4 w-4 text-stone-500" />
++                        <span className="sr-only">Información sobre Capital Inicial</span>
++                      </Button>
++                    </div>
++                    {activeInfoBox === 'capital_inicial' && (
++                      <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
++                        <Button 
++                          type="button" 
++                          variant="ghost" 
++                          size="icon" 
++                          className="h-5 w-5 p-0 absolute top-2 right-2"
++                          onClick={() => setActiveInfoBox(null)}
++                        >
++                          <XIcon className="h-3 w-3 text-stone-500" />
++                        </Button>
++                        <p className="text-sm text-stone-700 pr-6">
++                          Dinero que ya tienes al momento de comenzar la inversión, que estás dispuesto a invertir y no retirar hasta la pasividad.
++                        </p>
++                      </div>
++                    )}
++                    <div className="relative">
++                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
++                      <Input
++                        id="capital_inicial"
++                        name="capital_inicial"
++                        type="number"
++                        placeholder="Ej: 10000"
++                        min="0"
++                        step="0.01"
++                        className={`pl-8 ${validationErrors.capital_inicial ? "border-red-500" : ""}`}
++                        value={formData.capital_inicial || ''}
++                        onChange={handleChange}
++                      />
++                      {validationErrors.capital_inicial && (
++                        <p className="text-red-500 text-sm mt-1">{validationErrors.capital_inicial}</p>
++                      )}
++                    </div>
++                  </div>
+ 
+-              <div className="space-y-2">
+-                <Label htmlFor="inflacion_anual">Inflación Anual Esperada (%)</Label>
+-                <div className="relative">
+-                  <Input
+-                    id="inflacion_anual"
+-                    name="inflacion_anual"
+-                    type="number"
+-                    placeholder="Ej: 3"
+-                    min="0"
+-                    step="0.01"
+-                    defaultValue="0"
+-                    required
+-                    className="pr-8"
+-                  />
+-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+-                </div>
+-              </div>
++                  <div className="space-y-2">
++                    <div className="flex items-center gap-2">
++                      <Label htmlFor="inversion_mensual">Aporte Mensual (USD)</Label>
++                      <Button 
++                        type="button" 
++                        variant="ghost" 
++                        size="icon" 
++                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
++                        onClick={(e) => {
++                          e.preventDefault();
++                          setActiveInfoBox(activeInfoBox === 'inversion_mensual' ? null : 'inversion_mensual');
++                        }}
++                      >
++                        <InfoIcon className="h-4 w-4 text-stone-500" />
++                        <span className="sr-only">Información sobre Aporte Mensual</span>
++                      </Button>
++                    </div>
++                    {activeInfoBox === 'inversion_mensual' && (
++                      <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
++                        <Button 
++                          type="button" 
++                          variant="ghost" 
++                          size="icon" 
++                          className="h-5 w-5 p-0 absolute top-2 right-2"
++                          onClick={() => setActiveInfoBox(null)}
++                        >
++                          <XIcon className="h-3 w-3 text-stone-500" />
++                        </Button>
++                        <p className="text-sm text-stone-700 pr-6">
++                          Importe promedio que estimas aportar a la inversión mensualmente y sin excepción, para incrementar el monto invertido y aprovechar al máximo los efectos positivos del interés compuesto.
++                        </p>
++                      </div>
++                    )}
++                    <div className="relative">
++                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
++                      <Input
++                        id="inversion_mensual"
++                        name="inversion_mensual"
++                        type="number"
++                        placeholder="Ej: 500"
++                        min="0"
++                        step="0.01"
++                        className="pl-8"
++                        value={formData.inversion_mensual || ''}
++                        onChange={handleChange}
++                      />
++                    </div>
++                  </div>
+ 
+-              <div className="space-y-2">
+-                <Label htmlFor="total_anios">Cantidad de Años</Label>
+-                <Input
+-                  id="total_anios"
+-                  name="total_anios"
+-                  type="number"
+-                  placeholder="Ej: 5"
+-                  min="1"
+-                  step="1"
+-                  required
+-                />
+-              </div>
++                  <div className="space-y-2">
++                    <Label htmlFor="rendimiento_anual">Rendimiento de la Inversión (TNA %)</Label>
++                    <div className="relative">
++                      <Input
++                        id="rendimiento_anual"
++                        name="rendimiento_anual"
++                        type="number"
++                        placeholder="Ej: 6.25"
++                        min="0"
++                        step="0.01"
++                        required
++                        className={`pr-8 ${validationErrors.rendimiento_anual ? "border-red-500" : ""}`}
++                        value={formData.rendimiento_anual || ''}
++                        onChange={handleChange}
++                      />
++                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
++                      {validationErrors.rendimiento_anual && (
++                        <p className="text-red-500 text-sm mt-1">{validationErrors.rendimiento_anual}</p>
++                      )}
++                    </div>
++                  </div>
+ 
+-              <div className="space-y-2">
+-                <Label htmlFor="costo_vida_mensual">Costo de Vida Mensual (USD)</Label>
+-                <div className="relative">
+-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+-                  <Input
+-                    id="costo_vida_mensual"
+-                    name="costo_vida_mensual"
+-                    type="number"
+-                    placeholder="Ej: 2000"
+-                    min="0"
+-                    step="0.01"
+-                    required
+-                    className="pl-8"
+-                  />
++                  <div className="space-y-2">
++                    <Label htmlFor="inflacion_anual">Inflación Anual Esperada (%)</Label>
++                    <div className="relative">
++                      <Input
++                        id="inflacion_anual"
++                        name="inflacion_anual"
++                        type="number"
++                        placeholder="Ej: 3"
++                        min="0"
++                        step="0.01"
++                        required
++                        className="pr-8"
++                        value={formData.inflacion_anual}
++                        onChange={handleChange}
++                      />
++                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">%</span>
++                    </div>
++                  </div>
+                 </div>
+-              </div>
+-            </div>
+-
+-            <Button type="submit" className="w-full" disabled={isLoading}>
+-              {isLoading ? 'Calculando...' : 'Calcular Inversión'}
+-            </Button>
++                
++                <div className="flex space-x-4">
++                  <Button type="button" onClick={handlePrevTab} className="w-1/2" variant="outline">
++                    Anterior
++                  </Button>
++                  <Button type="submit" className="w-1/2" disabled={isLoading}>
++                    {isLoading ? 'Calculando...' : 'Ver Resultados'}
++                  </Button>
++                </div>
++              </TabsContent>
++            </Tabs>
+           </form>
+         </CardContent>
+       </Card>
+ 
+       {resultados && (
+-        <Card className="mt-8">
+-          <CardHeader>
+-            <CardTitle>Resultados de la Inversión</CardTitle>
+-          </CardHeader>
+-          <CardContent>
+-            <Table>
+-              <TableBody>
+-                <TableRow>
+-                  <TableCell className="font-medium">Capital Inicial:</TableCell>
+-                  <TableCell>{formatCurrency(resultados.capital_inicial)}</TableCell>
+-                </TableRow>
+-                <TableRow>
+-                  <TableCell className="font-medium">Aporte Mensual:</TableCell>
+-                  <TableCell>{formatCurrency(resultados.inversion_mensual)}</TableCell>
+-                </TableRow>
+-                <TableRow>
+-                  <TableCell className="font-medium">Total Aportado:</TableCell>
+-                  <TableCell>{formatCurrency(resultados.total_aportes_mensuales)}</TableCell>
+-                </TableRow>
+-                <TableRow className="bg-stone-50">
+-                  <TableCell className="font-medium">Total Invertido:</TableCell>
+-                  <TableCell>{formatCurrency(resultados.total_invertido)}</TableCell>
+-                </TableRow>
+-                <TableRow className="bg-green-50">
+-                  <TableCell className="font-medium">Monto Final:</TableCell>
+-                  <TableCell>{formatCurrency(resultados.monto_total)}</TableCell>
+-                </TableRow>
+-                <TableRow className="bg-blue-50">
+-                  <TableCell className="font-medium">Ganancia Neta:</TableCell>
+-                  <TableCell>{formatCurrency(resultados.ganancia_neta)}</TableCell>
+-                </TableRow>
+-                <TableRow className="bg-yellow-50">
+-                  <TableCell className="font-medium">Años de Retiro Posibles:</TableCell>
+-                  <TableCell>{formatYears(resultados.anios_retiro)}</TableCell>
+-                </TableRow>
+-                <TableRow className="bg-stone-50">
+-                  <TableCell colSpan={2} className="text-center">
+-                    {resultados.mensaje_retiro}
+-                  </TableCell>
+-                </TableRow>
+-              </TableBody>
+-            </Table>
+-          </CardContent>
+-        </Card>
++        <>
++          <div className="flex justify-center mt-6 mb-4">
++            <Button 
++              type="button" 
++              onClick={handleReset} 
++              variant="outline"
++              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300 hover:border-blue-400 font-medium px-8 py-3 text-base flex items-center gap-2"
++            >
++              <RefreshCw className="h-5 w-5" />
++              Resetear valores de inversión
++            </Button>
++          </div>
++          
++          <Card className="mt-2">
++            <CardHeader>
++              <CardTitle>Resumen Proyectado de tu Plan de Retiro</CardTitle>
++            </CardHeader>
++            <CardContent>
++              <Table>
++                <TableBody>
++                  <TableRow>
++                    <TableCell className="font-medium w-1/3">Capital Inicial:</TableCell>
++                    <TableCell className="w-2/3">{formatCurrency(resultados.capital_inicial)}</TableCell>
++                  </TableRow>
++                  <TableRow>
++                    <TableCell className="font-medium">Aporte Mensual:</TableCell>
++                    <TableCell>{formatCurrency(resultados.inversion_mensual)}</TableCell>
++                  </TableRow>
++                  <TableRow>
++                    <TableCell className="font-medium">Total Aportado:</TableCell>
++                    <TableCell>{formatCurrency(resultados.total_aportes_mensuales)}</TableCell>
++                  </TableRow>
++                  <TableRow className="bg-stone-50">
++                    <TableCell className="font-medium">Total Invertido:</TableCell>
++                    <TableCell>{formatCurrency(resultados.total_invertido)}</TableCell>
++                  </TableRow>
++                  <TableRow className="bg-green-50">
++                    <TableCell className="font-medium">Monto Final:</TableCell>
++                    <TableCell>{formatCurrency(resultados.monto_total)}</TableCell>
++                  </TableRow>
++                  <TableRow className="bg-blue-50">
++                    <TableCell className="font-medium">Ganancia Neta:</TableCell>
++                    <TableCell>{formatCurrency(resultados.ganancia_neta)}</TableCell>
++                  </TableRow>
++                  <TableRow className="bg-yellow-50">
++                    <TableCell className="font-medium">Años de Retiro Posibles:</TableCell>
++                    <TableCell>{formatYears(resultados.anios_retiro)}</TableCell>
++                  </TableRow>
++                </TableBody>
++              </Table>
++              
++              {/* Mensaje de retiro separado de la tabla para mejor formato */}
++              <div className="mt-4 p-4 bg-stone-50 rounded-lg border border-stone-100">
++                <p className="text-center text-stone-700">
++                  {resultados.mensaje_retiro}
++                </p>
++              </div>
++              
++              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
++                <p className="text-center text-stone-700">
++                  <span className="font-semibold">La magia del interés compuesto:</span> Gracias a haber invertido tu dinero durante {formData.edad_retiro - formData.edad_actual} años, has obtenido {formatCurrency(resultados.ganancia_neta)} adicionales a tu inversión inicial. 
++                  Esto representa un {((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(2)}% de rendimiento sobre el capital total invertido.
++                </p>
++              </div>
++            </CardContent>
++          </Card>
++        </>
+       )}
+     </div>
+   )
+diff --git a/src/components/ui/tabs.tsx b/src/components/ui/tabs.tsx
+new file mode 100644
+index 0000000..c5d93a2
+--- /dev/null
++++ b/src/components/ui/tabs.tsx
+@@ -0,0 +1,55 @@
++"use client"
++
++import * as React from "react"
++import * as TabsPrimitive from "@radix-ui/react-tabs"
++
++import { cn } from "@/lib/utils"
++
++const Tabs = TabsPrimitive.Root
++
++const TabsList = React.forwardRef<
++  React.ElementRef<typeof TabsPrimitive.List>,
++  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
++>(({ className, ...props }, ref) => (
++  <TabsPrimitive.List
++    ref={ref}
++    className={cn(
++      "inline-flex h-10 items-center justify-center rounded-md bg-stone-100 p-1 text-stone-500",
++      className
++    )}
++    {...props}
++  />
++))
++TabsList.displayName = TabsPrimitive.List.displayName
++
++const TabsTrigger = React.forwardRef<
++  React.ElementRef<typeof TabsPrimitive.Trigger>,
++  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
++>(({ className, ...props }, ref) => (
++  <TabsPrimitive.Trigger
++    ref={ref}
++    className={cn(
++      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-stone-950 data-[state=active]:shadow-sm",
++      className
++    )}
++    {...props}
++  />
++))
++TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
++
++const TabsContent = React.forwardRef<
++  React.ElementRef<typeof TabsPrimitive.Content>,
++  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
++>(({ className, ...props }, ref) => (
++  <TabsPrimitive.Content
++    ref={ref}
++    className={cn(
++      "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2",
++      className
++    )}
++    {...props}
++  />
++))
++TabsContent.displayName = TabsPrimitive.Content.displayName
++
++export { Tabs, TabsList, TabsTrigger, TabsContent } 
+\ No newline at end of file
+diff --git a/src/components/ui/tooltip.tsx b/src/components/ui/tooltip.tsx
+new file mode 100644
+index 0000000..7398d69
+--- /dev/null
++++ b/src/components/ui/tooltip.tsx
+@@ -0,0 +1,30 @@
++"use client"
++
++import * as React from "react"
++import * as TooltipPrimitive from "@radix-ui/react-tooltip"
++
++import { cn } from "@/lib/utils"
++
++const TooltipProvider = TooltipPrimitive.Provider
++
++const Tooltip = TooltipPrimitive.Root
++
++const TooltipTrigger = TooltipPrimitive.Trigger
++
++const TooltipContent = React.forwardRef<
++  React.ElementRef<typeof TooltipPrimitive.Content>,
++  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
++>(({ className, sideOffset = 4, ...props }, ref) => (
++  <TooltipPrimitive.Content
++    ref={ref}
++    sideOffset={sideOffset}
++    className={cn(
++      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
++      className
++    )}
++    {...props}
++  />
++))
++TooltipContent.displayName = TooltipPrimitive.Content.displayName
++
++export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } 
+\ No newline at end of file
+diff --git a/tailwind.config.js b/tailwind.config.js
+index b8f3ce0..626f9b8 100644
+--- a/tailwind.config.js
++++ b/tailwind.config.js
+@@ -54,7 +54,21 @@ module.exports = {
+         md: "calc(var(--radius) - 2px)",
+         sm: "calc(var(--radius) - 4px)",
+       },
++      keyframes: {
++        "accordion-down": {
++          from: { height: 0 },
++          to: { height: "var(--radix-accordion-content-height)" },
++        },
++        "accordion-up": {
++          from: { height: "var(--radix-accordion-content-height)" },
++          to: { height: 0 },
++        },
++      },
++      animation: {
++        "accordion-down": "accordion-down 0.2s ease-out",
++        "accordion-up": "accordion-up 0.2s ease-out",
++      },
+     },
+   },
+-  plugins: [],
++  plugins: [require("tailwindcss-animate")],
+ } 
+\ No newline at end of file
