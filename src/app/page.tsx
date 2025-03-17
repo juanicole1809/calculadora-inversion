@@ -52,8 +52,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <div className="container mx-auto px-4 py-12 md:py-24">
-        <div className="max-w-4xl mx-auto text-center mb-12">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="max-w-4xl mx-auto text-center mb-8">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-900">
             Planifica tu retiro con confianza
           </h1>
@@ -63,7 +63,7 @@ export default function Home() {
         </div>
 
         {/* Phrases Carousel */}
-        <div className="max-w-3xl mx-auto mb-16">
+        <div className="max-w-3xl mx-auto mb-10">
           <div className="relative h-64 md:h-56">
             {phrases.map((phrase, index) => (
               <Card
@@ -99,19 +99,19 @@ export default function Home() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center space-y-8 py-6 max-w-2xl mx-auto">
-          <div className="space-y-4">
+        <div className="text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm">
+          <div className="space-y-3">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
               Calcula tu plan de retiro personalizado
             </h2>
-            <p className="text-slate-600 max-w-lg mx-auto">
+            <p className="text-slate-600 max-w-lg mx-auto mb-6">
               Nuestra calculadora te ayudará a visualizar el crecimiento de tus inversiones y planificar un retiro
               financieramente seguro según tu estilo de vida deseado.
             </p>
           </div>
 
           <Link href="/calculadora" passHref>
-            <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all">
+            <Button size="lg" className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mt-4">
               Empezar ahora
               <ArrowRight className="ml-2" size={20} />
             </Button>
@@ -120,8 +120,8 @@ export default function Home() {
           <p className="text-sm text-slate-500 mt-4">Toma el control de tu futuro financiero en menos de 5 minutos</p>
         </div>
 
-        <div className="mt-16 md:mt-24 max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
+        <div className="mt-10 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-5">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <span className="text-primary font-bold">1</span>
