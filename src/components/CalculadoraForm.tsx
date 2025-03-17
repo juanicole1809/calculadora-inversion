@@ -213,12 +213,12 @@ export default function CalculadoraForm() {
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-stone-900 mb-4">Calculadora de Retiro</h1>
-        <p className="text-lg text-stone-600">
+        <p className="text-lg text-stone-600 mb-8">
           Planifica tu futuro financiero calculando el potencial de tus ahorros para un retiro cómodo
         </p>
       </div>
 
-      <Card>
+      <Card id="calculadora-form">
         <CardHeader>
           <CardTitle>Ingresa tus datos</CardTitle>
           <CardDescription>
@@ -618,23 +618,23 @@ export default function CalculadoraForm() {
           </form>
         </CardContent>
         
-        <CardFooter className="flex flex-col sm:flex-row gap-3 pt-0">
+        <CardFooter className="flex flex-col gap-3 pt-0">
           {formStep === 0 ? (
             <Button 
               type="button" 
               onClick={handleNextStep} 
-              className="w-full sm:w-auto"
+              className="w-full"
             >
               Continuar
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <div className="flex w-full gap-3">
+            <>
               <Button 
                 type="button" 
                 onClick={handlePrevStep} 
                 variant="outline"
-                className="flex-1"
+                className="w-full"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver a Datos Personales
@@ -645,13 +645,13 @@ export default function CalculadoraForm() {
                   e.preventDefault();
                   handleSubmit(new Event('submit') as unknown as React.FormEvent<HTMLFormElement>);
                 }}
-                className="flex-1"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? 'Calculando...' : 'Proyectar Rendimiento'}
                 <Calculator className="ml-2 h-4 w-4" />
               </Button>
-            </div>
+            </>
           )}
         </CardFooter>
       </Card>
@@ -779,6 +779,7 @@ export default function CalculadoraForm() {
                 )}
               </div>
               
+              {/* La magia del interés compuesto */}
               <div className="p-4 bg-stone-50 rounded-lg border border-stone-200 mb-6 text-center">
                 <p className="text-stone-700">
                   <span className="font-semibold">La magia del interés compuesto</span> transforma el tiempo en dinero. En {formData.edad_retiro - formData.edad_actual} años, has multiplicado tu inversión y generado {formatCurrency(resultados.ganancia_neta)} adicionales. Una rentabilidad del {((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(2)}% sobre tu capital invertido, demostrando que la constancia y la paciencia son la clave de la libertad financiera.
