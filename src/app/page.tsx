@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, FormEvent } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, TrendingUp, PiggyBank, LineChart, User } from "lucide-react"
@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label"
 export default function Home() {
   const [activePhrase, setActivePhrase] = useState(0)
   const [userName, setUserName] = useState("")
-  const [showNameModal, setShowNameModal] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [inputName, setInputName] = useState("")
   const router = useRouter()
 
   const phrases = [
@@ -56,31 +57,13 @@ export default function Home() {
     const savedName = localStorage.getItem("userName")
     if (savedName) {
       setUserName(savedName)
+      setInputName(savedName)
     }
   }, [])
 
   // Manual navigation
   const goToPhrase = (index: number) => {
     setActivePhrase(index)
-  }
-
-  const handleStartClick = () => {
-    // Si no hay nombre guardado, mostrar el modal
-    if (!userName) {
-      setShowNameModal(true)
-    } else {
-      // Si ya hay un nombre, ir directamente a la calculadora
-      router.push("/calculadora")
-    }
-  }
-
-  const handleNameSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (userName.trim()) {
-      localStorage.setItem("userName", userName.trim())
-      setShowNameModal(false)
-      router.push("/calculadora")
-    }
   }
 
   return (
@@ -136,19 +119,62 @@ export default function Home() {
         {/* CTA Section with enhanced design */}
         <div className="text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border border-slate-100 mb-16">
           <div className="space-y-3">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-              {userName ? `¡Hola ${userName}!` : 'Calcula tu plan de retiro personalizado'}
-            </h2>
+            <div className="flex items-center justify-center gap-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+                {userName && !editingName ? `¡Hola ${userName}!` : 'Calcula tu plan de retiro personalizado'}
+              </h2>
+              {userName && !editingName && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-2"
+                  onClick={() => {
+                    setEditingName(true);
+                    setInputName("");
+                  }}
+                >
+                  <span className="sr-only">Editar nombre</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </Button>
+              )}
+            </div>
             <p className="text-slate-600 max-w-lg mx-auto mb-6">
               Nuestra calculadora te ayudará a visualizar el crecimiento de tus inversiones y planificar un retiro
               financieramente seguro según tu estilo de vida deseado.
             </p>
           </div>
 
+          {editingName || !userName ? (
+            <div className="max-w-xs mx-auto mb-4">
+              <Input
+                type="text"
+                placeholder="Tu nombre..."
+                value={inputName}
+                onChange={(e) => setInputName(e.target.value)}
+                className="text-center"
+              />
+            </div>
+          ) : null}
+
           <Button 
             size="lg" 
             className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-            onClick={handleStartClick}
+            onClick={() => {
+              // Si está editando o no tiene nombre, guardar el nombre ingresado
+              if (editingName || !userName) {
+                if (inputName.trim()) {
+                  localStorage.setItem("userName", inputName.trim());
+                  setUserName(inputName.trim());
+                  setEditingName(false);
+                } else if (editingName) {
+                  // Si estaba editando y dejó el campo vacío, eliminar el nombre
+                  localStorage.removeItem("userName");
+                  setUserName("");
+                  setEditingName(false);
+                }
+              }
+              router.push("/calculadora");
+            }}
           >
             Empezar ahora
             <ArrowRight className="ml-2" size={20} />
@@ -193,61 +219,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* Modal para solicitar el nombre */}
-      {showNameModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full animate-in fade-in-50 zoom-in-95">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">¡Personaliza tu experiencia!</h3>
-              <p className="text-slate-600">
-                Para brindarte un análisis más personalizado, nos gustaría conocer tu nombre
-              </p>
-            </div>
-
-            <form onSubmit={handleNameSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="userName" className="text-sm font-medium">
-                  Tu nombre
-                </Label>
-                <Input
-                  id="userName"
-                  type="text"
-                  placeholder="Escribe tu nombre aquí"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="w-full"
-                  autoFocus
-                />
-                <p className="text-xs text-slate-500">Tu nombre se guardará localmente y lo usaremos para personalizar tus resultados</p>
-              </div>
-
-              <div className="flex gap-3 justify-end pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowNameModal(false)
-                    router.push("/calculadora")
-                  }}
-                >
-                  Omitir
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={!userName.trim()} 
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  Continuar
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

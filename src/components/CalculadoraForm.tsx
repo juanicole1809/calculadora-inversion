@@ -302,6 +302,14 @@ export default function CalculadoraForm() {
     setFormStep(1)
   }
 
+  // Función para capitalizar la primera letra de cada palabra
+  const capitalizeName = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="text-center mb-8">
@@ -313,7 +321,11 @@ export default function CalculadoraForm() {
 
       <Card id="calculadora-form">
         <CardHeader>
-          <CardTitle>Ingresa tus datos</CardTitle>
+          <CardTitle>
+            {userName ? 
+              `${capitalizeName(userName)}, ingresa tus datos` :
+              `Ingresa tus datos`}
+          </CardTitle>
           <CardDescription>
             Completa todos los campos para calcular tu plan de retiro
           </CardDescription>
@@ -1082,7 +1094,7 @@ export default function CalculadoraForm() {
                   if (interesesMensuales >= resultados.costo_vida_actualizado) {
                     return (
                       <p className="text-green-600 font-medium text-center">
-                        {userName ? `¡Felicidades ${userName}!` : '¡Felicidades!'} Según las proyecciones, al llegar a la edad de retiro ({formData.edad_retiro} años) habrás alcanzado la independencia financiera. 
+                        {userName ? `¡Felicidades ${capitalizeName(userName)}!` : '¡Felicidades!'} Según las proyecciones, al llegar a la edad de retiro ({formData.edad_retiro} años) habrás alcanzado la independencia financiera. 
                         Los intereses mensuales ({formatCurrency(interesesMensuales)}) cubrirán todos tus gastos proyectados.
                       </p>
                     );
@@ -1124,7 +1136,7 @@ export default function CalculadoraForm() {
                     return (
                       <div className="text-center">
                         <p className="text-amber-600 mb-2">
-                          {userName ? `${userName}, con tus aportes actuales` : 'Con tus aportes actuales'}, no lograrás la independencia financiera incluso después de tu edad de retiro.
+                          {userName ? `${capitalizeName(userName)}, con tus aportes actuales` : 'Con tus aportes actuales'}, no lograrás la independencia financiera incluso después de tu edad de retiro.
                         </p>
                         <p className="text-stone-700">
                           Necesitarás un capital de {formatCurrency(capitalNecesario)} para cubrir tus gastos solo con intereses.
@@ -1189,7 +1201,7 @@ export default function CalculadoraForm() {
               {/* Sección de Preguntas y Respuestas */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-stone-800 mb-4">
-                  {userName ? `${userName}, estas son algunas preguntas frecuentes sobre tu plan` : 'Preguntas Frecuentes sobre tu Plan de Retiro'}
+                  {userName ? `${capitalizeName(userName)}, estas son algunas preguntas frecuentes sobre tu plan` : 'Preguntas Frecuentes sobre tu Plan de Retiro'}
                 </h3>
                 
                 {/* Pregunta 1: ¿Qué es la independencia financiera? */}
@@ -1209,7 +1221,7 @@ export default function CalculadoraForm() {
                   {activeInfoBox === 'pregunta1' && (
                     <div className="p-4 bg-white">
                       <p className="text-stone-700 mb-2">
-                        {userName ? `${userName}, vivir de los intereses` : 'Vivir de los intereses'} significa que el dinero que genera tu capital invertido cada mes (los intereses) 
+                        {userName ? `${capitalizeName(userName)}, vivir de los intereses` : 'Vivir de los intereses'} significa que el dinero que genera tu capital invertido cada mes (los intereses) 
                         es suficiente para cubrir todos tus gastos mensuales, sin necesidad de tocar el capital principal.
                       </p>
                       <p className="text-stone-700">
