@@ -17,8 +17,14 @@ function calcularInversion(
   
   // Cálculo del monto acumulado durante la fase de inversión
   let monto_total = capital_inicial
-  for (let i = 0; i < total_meses; i++) {
-    monto_total = (monto_total + inversion_mensual) * (1 + tasa_mensual)
+  if (tasa_anual === 0) {
+    // Si la tasa es 0%, simplemente sumamos los aportes sin interés
+    monto_total = capital_inicial + (inversion_mensual * total_meses)
+  } else {
+    // Con interés compuesto
+    for (let i = 0; i < total_meses; i++) {
+      monto_total = (monto_total + inversion_mensual) * (1 + tasa_mensual)
+    }
   }
   
   // Cálculo de totales de la fase de inversión
@@ -31,6 +37,39 @@ function calcularInversion(
   const costo_vida_mensual_actualizado = costo_vida_mensual * factor_inflacion
   
   // Verificar si el capital nunca se agotará
+  // Si la tasa es 0%, el capital siempre se agotará a menos que el costo de vida sea 0
+  if (tasa_anual === 0 && costo_vida_mensual_actualizado === 0) {
+    return {
+      capital_inicial,
+      inversion_mensual,
+      total_aportes_mensuales,
+      total_invertido,
+      monto_total,
+      ganancia_neta,
+      costo_vida_inicial: costo_vida_mensual,
+      costo_vida_actualizado: costo_vida_mensual_actualizado,
+      anios_retiro: "∞",
+      mensaje_retiro: `El capital no se agotará ya que tus gastos mensuales son de $0.`
+    }
+  } else if (tasa_anual === 0) {
+    // Con tasa 0% y gastos mayores a 0, calculamos cuánto tiempo durará el capital
+    const meses_retiro = Math.floor(monto_total / costo_vida_mensual_actualizado);
+    const anios_retiro = Math.round(meses_retiro / 12 * 10) / 10;
+    
+    return {
+      capital_inicial,
+      inversion_mensual,
+      total_aportes_mensuales,
+      total_invertido,
+      monto_total,
+      ganancia_neta,
+      costo_vida_inicial: costo_vida_mensual,
+      costo_vida_actualizado: costo_vida_mensual_actualizado,
+      anios_retiro,
+      mensaje_retiro: `Años de retiro posibles: ${anios_retiro}. Con un rendimiento del 0%, tu capital se irá agotando mes a mes sin generar intereses.`
+    }
+  }
+  
   const interes_mensual_inicial = monto_total * tasa_mensual
   const retiro_mensual_inicial = costo_vida_mensual_actualizado
   
@@ -98,7 +137,13 @@ export async function POST(request: Request) {
     } = body
 
     // Validar que todos los campos necesarios estén presentes
-    if (!capital_inicial || !inversion_mensual || !tasa_anual || !total_anios || !costo_vida_mensual) {
+    if (
+      capital_inicial === undefined || 
+      inversion_mensual === undefined || 
+      tasa_anual === undefined || 
+      total_anios === undefined || 
+      costo_vida_mensual === undefined
+    ) {
       return NextResponse.json(
         { error: 'Todos los campos son requeridos' },
         { status: 400 }

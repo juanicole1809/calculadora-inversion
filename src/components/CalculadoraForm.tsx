@@ -194,11 +194,8 @@ export default function CalculadoraForm() {
         inflacionAnual: typeof formData.inflacion_anual === 'string' ? parseFloat(formData.inflacion_anual) || 0 : formData.inflacion_anual
       });
       
-      // Mejorar el mensaje de retiro cuando el capital no se agotará
-      if (result.anios_retiro === "∞") {
-        // Simplemente usamos los valores ya proporcionados por la API
-        result.mensaje_retiro = `¡Excelente noticia! Tu capital no se agotará nunca, ya que el dinero que recibirás mensualmente producto de los intereses (${formatCurrency(result.monto_total * uiValues.rendimientoAnual / 100 / 12)}) será mayor que lo que necesitas retirar para cubrir tus gastos según el costo de vida proyectado al momento de tu retiro (${formatCurrency(result.costo_vida_actualizado)}).`;
-      }
+      // Dejamos el mensaje tal como viene de la API
+      // La API ya maneja los casos especiales como rendimiento 0%
       
       setResultados(result)
       
@@ -628,13 +625,17 @@ export default function CalculadoraForm() {
                       <div className="relative flex flex-col space-y-2">
                         <Select
                           value={
+                            formData.rendimiento_anual === 0 ? "colchon" :
                             formData.rendimiento_anual === 3 ? "conservadora" :
                             formData.rendimiento_anual === 6 ? "moderada" :
                             formData.rendimiento_anual === 9 ? "arriesgada" :
                             "otro"
                           }
                           onValueChange={(value) => {
-                            if (value === "conservadora") {
+                            if (value === "colchon") {
+                              setRendimientoPersonalizado(false);
+                              setFormData(prev => ({ ...prev, rendimiento_anual: 0 }));
+                            } else if (value === "conservadora") {
                               setRendimientoPersonalizado(false);
                               setFormData(prev => ({ ...prev, rendimiento_anual: 3 }));
                             } else if (value === "moderada") {
@@ -652,6 +653,7 @@ export default function CalculadoraForm() {
                             <SelectValue placeholder="Seleccionar rendimiento" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="colchon">Debajo del colchón (0%)</SelectItem>
                             <SelectItem value="conservadora">Conservadora (3%)</SelectItem>
                             <SelectItem value="moderada">Moderada (6%)</SelectItem>
                             <SelectItem value="arriesgada">Arriesgada (9%)</SelectItem>
@@ -706,13 +708,17 @@ export default function CalculadoraForm() {
                       <div className="relative flex flex-col space-y-2">
                         <Select
                           value={
+                            formData.inflacion_anual === 0 ? "sin_inflacion" :
                             formData.inflacion_anual === 1.5 ? "baja" :
                             formData.inflacion_anual === 3.5 ? "moderada" :
                             formData.inflacion_anual === 6 ? "alta" :
                             "otro"
                           }
                           onValueChange={(value) => {
-                            if (value === "baja") {
+                            if (value === "sin_inflacion") {
+                              setInflacionPersonalizada(false);
+                              setFormData(prev => ({ ...prev, inflacion_anual: 0 }));
+                            } else if (value === "baja") {
                               setInflacionPersonalizada(false);
                               setFormData(prev => ({ ...prev, inflacion_anual: 1.5 }));
                             } else if (value === "moderada") {
@@ -730,6 +736,7 @@ export default function CalculadoraForm() {
                             <SelectValue placeholder="Seleccionar inflación" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="sin_inflacion">Sin inflación (0%)</SelectItem>
                             <SelectItem value="baja">Baja (1.5%)</SelectItem>
                             <SelectItem value="moderada">Moderada (3.5%)</SelectItem>
                             <SelectItem value="alta">Alta (6%)</SelectItem>
@@ -973,9 +980,12 @@ export default function CalculadoraForm() {
                   <span className="text-stone-600 text-sm font-medium mb-1">INTERESES MENSUALES GENERADOS</span>
                   <span className="text-stone-900 text-2xl font-bold">{formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</span>
                   <span className="text-stone-600 text-sm mt-2">
-                    {resultados.monto_total * uiValues.rendimientoAnual / 100 / 12 >= resultados.costo_vida_actualizado 
-                      ? "Suficientes para cubrir tu costo de vida" 
-                      : "Insuficientes para tu costo de vida, necesitarás ir consumiendo capital"}
+                    {uiValues.rendimientoAnual === 0
+                      ? "Con un rendimiento del 0%, no se generan intereses"
+                      : resultados.monto_total * uiValues.rendimientoAnual / 100 / 12 >= resultados.costo_vida_actualizado 
+                        ? "Suficientes para cubrir tu costo de vida" 
+                        : "Insuficientes para tu costo de vida, necesitarás ir consumiendo capital"
+                    }
                   </span>
                 </div>
               </div>
@@ -986,13 +996,17 @@ export default function CalculadoraForm() {
                 <div className="bg-stone-50 rounded-lg p-4 border border-stone-200">
                   {(() => {
                     const interesesMensuales = resultados.monto_total * uiValues.rendimientoAnual / 100 / 12;
-                    const porcentajeCobertura = (interesesMensuales / resultados.costo_vida_actualizado) * 100;
+                    const porcentajeCobertura = uiValues.rendimientoAnual === 0 ? 0 : (interesesMensuales / resultados.costo_vida_actualizado) * 100;
                     const estaCompleto = porcentajeCobertura >= 100;
                     
                     return (
                       <>
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-stone-600 text-sm">Intereses cubren {porcentajeCobertura.toFixed(1)}% de tus gastos</span>
+                          <span className="text-stone-600 text-sm">
+                            {uiValues.rendimientoAnual === 0 
+                              ? "Sin intereses que cubran tus gastos" 
+                              : `Intereses cubren ${porcentajeCobertura.toFixed(1)}% de tus gastos`}
+                          </span>
                           <span className="text-stone-800 font-medium">{formatCurrency(interesesMensuales)} / {formatCurrency(resultados.costo_vida_actualizado)}</span>
                         </div>
                         <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
@@ -1101,14 +1115,16 @@ export default function CalculadoraForm() {
                   }
                   
                   // Calcular cuanto capital necesitamos
-                  const capitalNecesario = (resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100);
+                  const capitalNecesario = uiValues.rendimientoAnual === 0 ? 
+                    Infinity : (resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100);
                   const capitalFaltante = capitalNecesario - resultados.monto_total;
                   
                   // Calcular cuánto aporte mensual adicional necesitarías para llegar a independencia financiera a la edad de retiro
                   const aniosHastaRetiro = formData.edad_retiro - formData.edad_actual;
                   const mesesHastaRetiro = aniosHastaRetiro * 12;
                   const tasaMensual = uiValues.rendimientoAnual / 100 / 12;
-                  const factorCapitalizacion = ((Math.pow(1 + tasaMensual, mesesHastaRetiro) - 1) / tasaMensual);
+                  const factorCapitalizacion = tasaMensual === 0 ?
+                    mesesHastaRetiro : ((Math.pow(1 + tasaMensual, mesesHastaRetiro) - 1) / tasaMensual);
                   const aporteNecesarioMensual = Math.max(0, capitalNecesario / factorCapitalizacion - (formData.capital_inicial * Math.pow(1 + tasaMensual, mesesHastaRetiro)) / factorCapitalizacion);
                   const aporteAdicionalMensual = Math.max(0, aporteNecesarioMensual - formData.inversion_mensual);
                   
@@ -1117,9 +1133,14 @@ export default function CalculadoraForm() {
                   let monto = resultados.monto_total;
                   const rendimientoMensual = uiValues.rendimientoAnual / 100 / 12;
                   
-                  while (monto < capitalNecesario && meses < 1200) { // máximo 100 años
-                    monto = (monto + formData.inversion_mensual) * (1 + rendimientoMensual);
-                    meses++;
+                  // Si el rendimiento es 0%, el bucle sería infinito
+                  if (uiValues.rendimientoAnual === 0) {
+                    meses = 1200; // Máximo de años (no se alcanzará la independencia financiera)
+                  } else {
+                    while (monto < capitalNecesario && meses < 1200) { // máximo 100 años
+                      monto = (monto + formData.inversion_mensual) * (1 + rendimientoMensual);
+                      meses++;
+                    }
                   }
                   
                   const anios = Math.floor(meses / 12);
@@ -1173,17 +1194,6 @@ export default function CalculadoraForm() {
                         <strong>¿Qué necesitarás para lograr independencia financiera?</strong> Un capital total de <strong>{formatCurrency(capitalNecesario)}</strong> para generar suficientes intereses.
                         Al momento de tu retiro, te faltarán <strong>{formatCurrency(capitalFaltante)}</strong>.
                       </p>
-                      <div className="bg-stone-100 p-4 rounded-lg mb-4">
-                        <p className="text-stone-700 font-medium">
-                          Si continúas aportando {formatCurrency(formData.inversion_mensual)} mensuales <strong>después de tu retiro</strong>:
-                        </p>
-                        <p className="text-primary text-lg font-bold my-2">
-                          Alcanzarás la independencia financiera {anios} {anios === 1 ? 'año' : 'años'}{mesesRestantes > 0 ? ` y ${mesesRestantes} ${mesesRestantes === 1 ? 'mes' : 'meses'}` : ''} después de tu retiro
-                        </p>
-                        <p className="text-stone-700">
-                          Esto será a la edad de <strong>{edadFormateada}</strong>
-                        </p>
-                      </div>
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <p className="text-stone-800 font-medium mb-2">¿Quieres lograr independencia financiera a los {formData.edad_retiro} años?</p>
                         <p className="text-stone-700">
@@ -1226,8 +1236,11 @@ export default function CalculadoraForm() {
                       </p>
                       <p className="text-stone-700">
                         En tu caso, necesitas generar <strong>{formatCurrency(resultados.costo_vida_actualizado)}</strong> mensuales para mantener 
-                        tu nivel de vida. Con un rendimiento anual del {uiValues.rendimientoAnual}%, necesitas un capital de 
-                        <strong> {formatCurrency((resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100))}</strong> para generar esos intereses mensualmente.
+                        tu nivel de vida. {uiValues.rendimientoAnual === 0 
+                          ? "Con un rendimiento anual del 0%, no es posible generar intereses para cubrir tus gastos."
+                          : `Con un rendimiento anual del ${uiValues.rendimientoAnual}%, necesitas un capital de 
+                            <strong> ${formatCurrency((resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100))}</strong> para generar esos intereses mensualmente.`
+                        }
                       </p>
                     </div>
                   )}
@@ -1286,10 +1299,13 @@ export default function CalculadoraForm() {
                     <div className="p-4 bg-white">
                       {resultados.anios_retiro === "∞" ? (
                         <p className="text-stone-700">
-                          En tu caso, ¡buenas noticias! Los intereses que generará tu capital (<strong>{formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong> mensuales) 
-                          superan tus gastos mensuales (<strong>{formatCurrency(resultados.costo_vida_actualizado)}</strong>), 
-                          por lo que tu capital nunca se agotará. De hecho, seguirá creciendo incluso durante tu retiro, permitiéndote aumentar 
-                          tu nivel de vida o dejar una herencia.
+                          {uiValues.rendimientoAnual === 0 ? 
+                            "Con un rendimiento del 0%, tu capital no generará intereses para cubrir tus gastos, por lo que eventualmente se agotará a menos que tus gastos sean cero." :
+                            `En tu caso, ¡buenas noticias! Los intereses que generará tu capital (<strong>${formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong> mensuales) 
+                            superan tus gastos mensuales (<strong>${formatCurrency(resultados.costo_vida_actualizado)}</strong>), 
+                            por lo que tu capital nunca se agotará. De hecho, seguirá creciendo incluso durante tu retiro, permitiéndote aumentar 
+                            tu nivel de vida o dejar una herencia.`
+                          }
                         </p>
                       ) : (
                         <>
@@ -1305,8 +1321,11 @@ export default function CalculadoraForm() {
                           </p>
                           <p className="text-stone-700 mb-2">
                             Esto sucede porque tus gastos mensuales (<strong>{formatCurrency(resultados.costo_vida_actualizado)}</strong>) 
-                            son mayores que los intereses que genera tu capital (<strong>{formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong> mensuales), 
-                            por lo que cada mes consumirás una parte de tu capital principal hasta agotarlo.
+                            {uiValues.rendimientoAnual === 0 ?
+                              " no pueden ser cubiertos por intereses, ya que con un rendimiento del 0% no se generan intereses." :
+                              ` son mayores que los intereses que genera tu capital (<strong>${formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong> mensuales), 
+                              por lo que cada mes consumirás una parte de tu capital principal hasta agotarlo.`
+                            }
                           </p>
                           <p className="text-stone-700">
                             Para aumentar la duración de tu capital, puedes: (1) incrementar tu capital acumulado antes del retiro, 
@@ -1340,11 +1359,13 @@ export default function CalculadoraForm() {
                         const aniosRestantes = formData.edad_retiro - formData.edad_actual;
                         const mesesRestantes = aniosRestantes * 12;
                         const interesesMensuales = resultados.monto_total * uiValues.rendimientoAnual / 100 / 12;
-                        const capitalNecesario = (resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100);
+                        const capitalNecesario = uiValues.rendimientoAnual === 0 ? 
+                          Infinity : (resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100);
                         const capitalFaltante = capitalNecesario - resultados.monto_total;
                         
                         const tasaMensual = uiValues.rendimientoAnual / 100 / 12;
-                        const factorCapitalizado = ((Math.pow(1 + tasaMensual, mesesRestantes) - 1) / tasaMensual);
+                        const factorCapitalizado = tasaMensual === 0 ? 
+                          mesesRestantes : ((Math.pow(1 + tasaMensual, mesesRestantes) - 1) / tasaMensual);
                         
                         // La fórmula para calcular el aporte mensual necesario
                         const aporteOptimoMensual = capitalFaltante / factorCapitalizado;
@@ -1391,8 +1412,10 @@ export default function CalculadoraForm() {
                               <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
                                 <p className="font-medium mb-1">3. Extender tu horizonte de inversión</p>
                                 <p className="text-sm">
-                                  Si mantuvieras tu aporte actual pero trabajaras más años, necesitarías aproximadamente {Math.ceil((Math.log(capitalNecesario / resultados.monto_total) / Math.log(1 + uiValues.rendimientoAnual / 100)) + aniosRestantes)} años 
-                                  en total para alcanzar la independencia financiera (en lugar de {aniosRestantes}).
+                                  {uiValues.rendimientoAnual === 0 
+                                    ? "Con un rendimiento del 0%, no es posible alcanzar la independencia financiera solo extendiendo el horizonte de inversión."
+                                    : `Si mantuvieras tu aporte actual pero trabajaras más años, necesitarías aproximadamente ${Math.ceil((Math.log(capitalNecesario / resultados.monto_total) / Math.log(1 + uiValues.rendimientoAnual / 100)) + aniosRestantes)} años en total para alcanzar la independencia financiera (en lugar de ${aniosRestantes}).`
+                                  }
                                 </p>
                               </div>
                               
