@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/card'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
-import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator } from 'lucide-react'
+import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer } from 'lucide-react'
 import { 
   Select, 
   SelectContent, 
@@ -17,6 +17,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from '../lib/utils'
+import { exportToPDF } from '../lib/pdfUtils'
+import { createSimplePDF } from '../lib/simplePdf'
 
 interface ResultadosInversion {
   capital_inicial: number
@@ -72,6 +74,10 @@ export default function CalculadoraForm() {
     rendimientoAnual: 6,
     inflacionAnual: 3.5
   })
+  
+  // Referencia para el componente de resultados para exportar a PDF
+  const resultadosRef = useRef<HTMLDivElement>(null)
+  const [isExportingPDF, setIsExportingPDF] = useState(false)
   
   // Cargar el nombre del usuario desde localStorage
   useEffect(() => {
@@ -306,6 +312,56 @@ export default function CalculadoraForm() {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
+
+  // Función para exportar los resultados a PDF
+  const exportarPDF = async () => {
+    console.log('Función exportarPDF iniciada');
+    
+    if (!resultados) {
+      console.error('No hay resultados para exportar a PDF');
+      alert('Error: No hay datos para exportar a PDF');
+      return;
+    }
+    
+    setIsExportingPDF(true);
+    
+    try {
+      console.log('Intentando generar PDF con método simplificado primero...');
+      
+      // Intentar primero con el método simplificado (más confiable)
+      const simpleSuccess = createSimplePDF(resultados, formData, uiValues);
+      
+      if (simpleSuccess) {
+        console.log('PDF generado exitosamente con método simplificado');
+        alert('¡PDF generado exitosamente! Revisa tus descargas.');
+      } else {
+        console.log('Método simplificado falló, intentando con método html2canvas...');
+        
+        // Si falló, intentar con html2canvas
+        if (resultadosRef.current) {
+          const htmlSuccess = await exportToPDF(
+            resultadosRef.current as HTMLElement, 
+            `Plan_Retiro_${format(new Date(), 'dd-MM-yyyy')}.pdf`
+          );
+          
+          if (htmlSuccess) {
+            console.log('PDF generado exitosamente con método html2canvas');
+            alert('¡PDF generado exitosamente! Revisa tus descargas.');
+          } else {
+            throw new Error('Ambos métodos de generación de PDF fallaron');
+          }
+        } else {
+          throw new Error('No se pudo encontrar el elemento para exportar a PDF');
+        }
+      }
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+      alert('Hubo un error al generar el PDF. Por favor, intenta nuevamente. Revisa la consola para más detalles.');
+    } finally {
+      setIsExportingPDF(false);
+      console.log('Estado isExportingPDF cambiado a false');
+    }
+  }
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
@@ -832,7 +888,7 @@ export default function CalculadoraForm() {
 
       {resultados && (
         <>
-          <div className="flex justify-center mt-6 mb-4">
+          <div className="flex justify-center mt-6 mb-4 gap-4">
             <Button 
               type="button" 
               onClick={handleReset} 
@@ -842,11 +898,22 @@ export default function CalculadoraForm() {
               <RefreshCw className="h-5 w-5" />
               Resetear valores de inversión
             </Button>
+            
+            <Button 
+              type="button" 
+              onClick={exportarPDF} 
+              variant="outline"
+              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 font-medium px-8 py-3 text-base flex items-center gap-2"
+              disabled={isExportingPDF}
+            >
+              <FileText className="h-5 w-5" />
+              {isExportingPDF ? 'Generando PDF...' : 'Descargar como PDF'}
+            </Button>
           </div>
           
-          <Card className="mt-2" id="resultados-section">
+          <Card className="mt-2" id="resultados-section" ref={resultadosRef}>
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="text-xl font-bold">
                 Resumen Proyectado de tu Plan de Retiro
               </CardTitle>
             </CardHeader>
