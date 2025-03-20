@@ -21,10 +21,17 @@ interface GraficosProyeccionProps {
 // Tooltip personalizado para mejorar la presentación
 const CustomTooltip = ({ active, payload, label, formatter }: any) => {
   if (active && payload && payload.length) {
+    // Para el gráfico de composición, invertimos el orden (intereses arriba, capital abajo)
+    // ya que en el gráfico el capital está abajo (verde) y los intereses arriba (azul)
+    const payloadOrdered = [...payload];
+    if (payload.length === 2 && payload[0].dataKey === "aportesAcumulados") {
+      payloadOrdered.reverse();
+    }
+    
     return (
       <div className="bg-white p-3 border border-stone-200 rounded-lg shadow-sm">
         <p className="font-medium text-stone-800 mb-2">{`Año ${label}`}</p>
-        {payload.map((entry: any, index: number) => (
+        {payloadOrdered.map((entry: any, index: number) => (
           <div key={`item-${index}`} className="flex items-center mb-1">
             <div 
               className="w-3 h-3 rounded-full mr-2" 
