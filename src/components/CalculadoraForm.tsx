@@ -950,7 +950,82 @@ export default function CalculadoraForm() {
                   
                   {activeInfoBox === 'pregunta4' && (
                     <div className="p-4 bg-white">
-                      {/* Contenido de la pregunta 4 */}
+                      {(() => {
+                        // Preparar datos para las recomendaciones
+                        const aniosRestantes = formData.edad_retiro - formData.edad_actual;
+                        const mesesRestantes = aniosRestantes * 12;
+                        const interesesMensuales = resultados.monto_total * uiValues.rendimientoAnual / 100 / 12;
+                        const capitalNecesario = uiValues.rendimientoAnual === 0 ? 
+                          Infinity : (resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100);
+                        const capitalFaltante = capitalNecesario - resultados.monto_total;
+                        
+                        const tasaMensual = uiValues.rendimientoAnual / 100 / 12;
+                        const factorCapitalizado = tasaMensual === 0 ? 
+                          mesesRestantes : ((Math.pow(1 + tasaMensual, mesesRestantes) - 1) / tasaMensual);
+                        
+                        // La fórmula para calcular el aporte mensual necesario
+                        const aporteOptimoMensual = capitalFaltante / factorCapitalizado;
+                        const aporteTotal = aporteOptimoMensual + formData.inversion_mensual;
+                        
+                        // Si ya alcanzaste independencia financiera
+                        if (interesesMensuales >= resultados.costo_vida_actualizado) {
+                          return (
+                            <p className="text-stone-700">
+                              ¡Ya has alcanzado un excelente plan de retiro! Tu capital generará suficientes intereses para cubrir
+                              todos tus gastos. Si quieres mejorar aún más, podrías:
+                              <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Seguir aportando para incrementar tu nivel de vida en el retiro</li>
+                                <li>Diversificar tus inversiones para protegerte contra imprevistos</li>
+                                <li>Planificar cómo quieres utilizar el excedente (viajes, hobbies, herencia, etc.)</li>
+                              </ul>
+                            </p>
+                          );
+                        }
+                        
+                        return (
+                          <>
+                            <p className="text-stone-700 mb-3">
+                              Hay varias formas de mejorar tu plan de retiro:
+                            </p>
+                            <div className="space-y-3">
+                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
+                                <p className="font-medium mb-1">1. Aumentar tu aporte mensual</p>
+                                <p className="text-sm">
+                                  Aportar <strong>un adicional de {formatCurrency(aporteOptimoMensual)}</strong> (además de tus {formatCurrency(formData.inversion_mensual)} actuales) 
+                                  para llegar a un total de <strong>{formatCurrency(aporteTotal)}</strong> mensuales te permitiría 
+                                  alcanzar la independencia financiera justo para tu edad de retiro.
+                                </p>
+                              </div>
+                              
+                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
+                                <p className="font-medium mb-1">2. Reducir tus gastos futuros</p>
+                                <p className="text-sm">
+                                  Si pudieras reducir tus gastos mensuales proyectados de {formatCurrency(resultados.costo_vida_actualizado)} a {' '}
+                                  {formatCurrency(interesesMensuales)}, podrías vivir indefinidamente de los intereses.
+                                </p>
+                              </div>
+                              
+                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
+                                <p className="font-medium mb-1">3. Extender tu horizonte de inversión</p>
+                                <p className="text-sm">
+                                  {uiValues.rendimientoAnual === 0 
+                                    ? "Con un rendimiento del 0%, no es posible alcanzar la independencia financiera solo extendiendo el horizonte de inversión."
+                                    : `Si mantuvieras tu aporte actual pero trabajaras más años, necesitarías aproximadamente ${Math.ceil((Math.log(capitalNecesario / resultados.monto_total) / Math.log(1 + uiValues.rendimientoAnual / 100)) + aniosRestantes)} años en total para alcanzar la independencia financiera (en lugar de ${aniosRestantes}).`
+                                  }
+                                </p>
+                              </div>
+                              
+                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
+                                <p className="font-medium mb-1">4. Buscar un mayor rendimiento</p>
+                                <p className="text-sm">
+                                  Si pudieras aumentar tu rendimiento anual del {uiValues.rendimientoAnual}% al {(uiValues.rendimientoAnual * 1.5).toFixed(1)}%, 
+                                  alcanzarías la independencia financiera más rápido, aunque esto generalmente implica asumir más riesgo.
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
