@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
-import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer } from 'lucide-react'
+import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer, PiggyBank } from 'lucide-react'
 import { 
   Select, 
   SelectContent, 
@@ -21,6 +21,7 @@ import { exportToPDF } from '../lib/pdfUtils'
 import { createSimplePDF } from '../lib/simplePdf'
 import FormularioCalculadora from './FormularioCalculadora'
 import { GraficosProyeccion } from "./GraficosProyeccion"
+import { toast } from 'sonner'
 
 interface ResultadosInversion {
   capital_inicial: number
@@ -228,7 +229,11 @@ export default function CalculadoraForm() {
       }, 100);
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al realizar el cálculo. Por favor, intenta nuevamente.')
+      toast.error('Error al realizar el cálculo', {
+        description: 'Por favor, intenta nuevamente',
+        duration: 4000,
+        closeButton: true
+      });
     } finally {
       setIsLoading(false)
     }
@@ -317,6 +322,12 @@ export default function CalculadoraForm() {
     setValidationErrors({})
     setResultados(null)
     setFormStep(1)
+    
+    toast.info('Valores de inversión reseteados', {
+      description: 'Se han mantenido tus datos personales',
+      duration: 3000,
+      closeButton: true
+    })
   }
 
   // Función para capitalizar la primera letra de cada palabra
@@ -329,53 +340,45 @@ export default function CalculadoraForm() {
 
   // Función para exportar los resultados a PDF
   const exportarPDF = async () => {
-    console.log('Función exportarPDF iniciada');
-    
     if (!resultados) {
-      console.error('No hay resultados para exportar a PDF');
-      alert('Error: No hay datos para exportar a PDF');
+      toast.error('Error: No hay datos para exportar a PDF', {
+        closeButton: true
+      });
       return;
     }
-    
-    setIsExportingPDF(true);
-    
+
     try {
-      console.log('Intentando generar PDF con método simplificado primero...');
+      setIsExportingPDF(true);
+      // Método 1: Capturar HTML (comentado)
+      // const success = await exportToPDF(resultadosRef.current);
       
-      // Intentar primero con el método simplificado (más confiable)
-      const simpleSuccess = createSimplePDF(resultados, formData, uiValues);
+      // Método 2: Generar PDF desde código (preferido)
+      const success = await createSimplePDF(resultados, formData, uiValues);
       
-      if (simpleSuccess) {
-        console.log('PDF generado exitosamente con método simplificado');
-        alert('¡PDF generado exitosamente! Revisa tus descargas.');
+      if (success) {
+        toast.success('PDF generado exitosamente', {
+          description: 'El archivo se ha descargado a tu dispositivo',
+          duration: 4000,
+          closeButton: true
+        });
       } else {
-        console.log('Método simplificado falló, intentando con método html2canvas...');
-        
-        // Si falló, intentar con html2canvas
-        if (resultadosRef.current) {
-          const htmlSuccess = await exportToPDF(
-            resultadosRef.current as HTMLElement, 
-            `Plan_Retiro_${format(new Date(), 'dd-MM-yyyy')}.pdf`
-          );
-          
-          if (htmlSuccess) {
-            console.log('PDF generado exitosamente con método html2canvas');
-            alert('¡PDF generado exitosamente! Revisa tus descargas.');
-          } else {
-            throw new Error('Ambos métodos de generación de PDF fallaron');
-          }
-        } else {
-          throw new Error('No se pudo encontrar el elemento para exportar a PDF');
-        }
+        toast.error('Error al generar el PDF', {
+          description: 'Por favor, intenta nuevamente',
+          duration: 4000,
+          closeButton: true
+        });
       }
     } catch (error) {
-      console.error('Error al generar el PDF:', error);
-      alert('Hubo un error al generar el PDF. Por favor, intenta nuevamente. Revisa la consola para más detalles.');
+      console.error('Error al exportar a PDF:', error);
+      toast.error('Error al generar el PDF', {
+        description: 'Por favor, intenta nuevamente',
+        duration: 4000,
+        closeButton: true
+      });
     } finally {
       setIsExportingPDF(false);
-      console.log('Estado isExportingPDF cambiado a false');
     }
-  }
+  };
 
   // Calcular porcentajes para la distribución del capital
   const porcentajeInvertido = resultados ? Math.round((resultados.total_invertido / resultados.monto_total) * 100) : 0;
@@ -383,8 +386,14 @@ export default function CalculadoraForm() {
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
+      <div className="flex items-center justify-center mb-4">
+        <PiggyBank className="h-10 w-10 text-primary mr-2" />
+        <h1 className="text-3xl font-bold text-slate-900">
+          <span className="font-black">MiRetiro</span>
+        </h1>
+      </div>
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-stone-900 mb-4">Calculadora de Inversión</h1>
+        <h2 className="text-3xl font-bold text-stone-900 mb-4">Calculadora de Inversión</h2>
         <p className="text-lg text-stone-600 mb-8">
           Planifica tu futuro financiero calculando el potencial de tus ahorros para un retiro cómodo
         </p>

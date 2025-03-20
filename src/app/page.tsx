@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, TrendingUp, PiggyBank, LineChart, User } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -14,7 +13,6 @@ export default function Home() {
   const [userName, setUserName] = useState("")
   const [editingName, setEditingName] = useState(false)
   const [inputName, setInputName] = useState("")
-  const router = useRouter()
 
   const phrases = [
     {
@@ -69,10 +67,16 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="container mx-auto px-4 py-8 md:py-16">
-        <div className="max-w-3xl mx-auto text-center mb-8">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-900">
-            Calculadora de Inversión para tu Retiro
+        <div className="flex items-center justify-center mb-4">
+          <PiggyBank className="h-10 w-10 text-primary mr-2" />
+          <h1 className="text-3xl font-bold text-slate-900">
+            <span className="font-black">MiRetiro</span>
           </h1>
+        </div>
+        <div className="max-w-3xl mx-auto text-center mb-8">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-900">
+            Calculadora de Inversión para tu Retiro
+          </h2>
           <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-8">
             Planifica tu futuro financiero y descubre cómo alcanzar la independencia financiera
           </p>
@@ -132,11 +136,13 @@ export default function Home() {
                     setEditingName(false);
                   }
                 }
-                router.push("/calculadora");
               }}
+              asChild
             >
-              Empezar ahora
-              <ArrowRight className="ml-2" size={20} />
+              <Link href="/calculadora">
+                Empezar ahora
+                <ArrowRight className="ml-2" size={20} />
+              </Link>
             </Button>
 
             <p className="text-sm text-slate-500 mt-4">Toma el control de tu futuro financiero en menos de 5 minutos</p>

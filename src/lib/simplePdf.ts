@@ -71,20 +71,21 @@ export function createSimplePDF(resultados: any, formData: any, uiValues: any) {
     };
     
     // Función para añadir texto con salto de línea
-    const addText = (text: string, fontSize: number = 12, options: {
-      isBold?: boolean;
-      color?: number[];
-      align?: 'left' | 'center' | 'right';
-      withBackground?: boolean;
-      backgroundWidth?: number;
-      backgroundHeight?: number;
-      backgroundPadding?: number;
-      backgroundColor?: number[];
-      withBorder?: boolean;
-      borderColor?: number[];
-      underline?: boolean;
+    const addText = (text: string, fontSize: number, options: {
+      isBold?: boolean,
+      color?: number[],
+      align?: 'left' | 'center' | 'right',
+      withBackground?: boolean,
+      backgroundWidth?: number,
+      backgroundHeight?: number,
+      backgroundPadding?: number,
+      backgroundColor?: number[],
+      withBorder?: boolean,
+      borderColor?: number[],
+      underline?: boolean,
+      x?: number
     } = {}) => {
-      // Configuración de texto
+      // Configurar estilo de texto
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', options.isBold ? 'bold' : 'normal');
       
@@ -92,15 +93,22 @@ export function createSimplePDF(resultados: any, formData: any, uiValues: any) {
       const textColor = options.color || colors.dark;
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
       
-      // Alineación
+      // Posición horizontal según alineación
       let xPos = margin;
-      let textOptions: { align?: 'left' | 'center' | 'right' | 'justify' } = {};
+      const textOptions: any = {};
+      
+      // Si tiene alineación específica
       if (options.align === 'center') {
         xPos = pageWidth / 2;
         textOptions.align = 'center' as const;
       } else if (options.align === 'right') {
         xPos = pageWidth - margin;
         textOptions.align = 'right' as const;
+      }
+      
+      // Si se proporciona una posición X específica, usarla
+      if (options.x !== undefined) {
+        xPos = options.x;
       }
       
       // Si tiene fondo
@@ -308,11 +316,54 @@ export function createSimplePDF(resultados: any, formData: any, uiValues: any) {
     
     // ======== CONSTRUCCIÓN DEL PDF ========
     
-    // Encabezado
-    addText('Calculadora de Retiro', 24, { 
+    // Dibujar un pequeño ícono de cerdo (PiggyBank) simplificado
+    const drawPiggyBank = (x: number, y: number, size: number = 10) => {
+      // Guardar estado
+      pdf.saveGraphicsState();
+      
+      // Cuerpo del cerdo
+      pdf.setFillColor(52, 102, 189); // Color azul primario
+      pdf.ellipse(x, y, size/2, size/3, 'F');
+      
+      // Cabeza
+      pdf.ellipse(x + size/2.2, y - size/4, size/3.5, size/4, 'F');
+      
+      // Orejas
+      pdf.setFillColor(40, 85, 160); // Azul más oscuro
+      pdf.ellipse(x + size/1.8, y - size/2.5, size/8, size/6, 'F');
+      
+      // Patas
+      pdf.setFillColor(40, 85, 160); // Azul más oscuro
+      pdf.ellipse(x - size/3, y + size/4, size/9, size/5, 'F');
+      pdf.ellipse(x + size/3, y + size/4, size/9, size/5, 'F');
+      
+      // Restaurar estado
+      pdf.restoreGraphicsState();
+    };
+    
+    // Calcular posición para el ícono y título centrados
+    const titleWidth = pdf.getTextWidth('MiRetiro');
+    const iconSize = 8;
+    const iconSpacing = 5;
+    const combinedWidth = titleWidth + iconSize + iconSpacing;
+    const titleX = (pageWidth - combinedWidth)/2;
+    const iconX = titleX;
+    
+    // Dibujar el ícono
+    drawPiggyBank(iconX + iconSize/2, marginTop - 2, iconSize);
+    
+    // Logo y Nombre
+    addText('MiRetiro', 24, { 
       isBold: true, 
+      align: 'left',
+      color: colors.dark,  // Negro en lugar de azul
+      x: iconX + iconSize + iconSpacing  // Posición específica después del ícono
+    });
+    
+    // Encabezado
+    addText('Calculadora de Retiro', 20, { 
       align: 'center', 
-      color: colors.primary 
+      color: colors.stone 
     });
     
     addText('Planifica tu futuro financiero', 12, { 
