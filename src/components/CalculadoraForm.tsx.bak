@@ -420,6 +420,28 @@ export default function CalculadoraForm() {
 
       {resultados && (
         <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col shadow-sm">
+              <span className="text-stone-600 text-sm font-medium mb-1">MONTO FINAL ACUMULADO</span>
+              <span className="text-stone-900 text-2xl font-bold">{formatCurrency(resultados.monto_total)}</span>
+              <span className="text-stone-600 text-sm mt-2">Total a la edad de {formData.edad_retiro} años</span>
+            </div>
+            
+            <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col shadow-sm relative overflow-hidden">
+              <div className="absolute inset-0 bg-primary/5"></div>
+              <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+              <span className="text-primary text-sm font-semibold mb-1 relative z-10">GANANCIA NETA OBTENIDA</span>
+              <span className="text-stone-900 text-2xl font-bold relative z-10">{formatCurrency(resultados.ganancia_neta)}</span>
+              <span className="text-primary-700 text-sm mt-2 relative z-10">+{((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(0)}% sobre capital invertido</span>
+            </div>
+            
+            <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col shadow-sm">
+              <span className="text-stone-600 text-sm font-medium mb-1">DURACIÓN DE TU CAPITAL</span>
+              <span className="text-stone-900 text-2xl font-bold">{formatYears(resultados.anios_retiro)}</span>
+              <span className="text-stone-600 text-sm mt-2">{resultados.anios_retiro === "∞" ? "Tu capital se mantendrá indefinidamente" : "Tiempo estimado antes de agotar el capital"}</span>
+            </div>
+          </div>
+          
           <div className="mt-6">
             <h2 className="text-lg font-semibold mb-4">DISTRIBUCIÓN DE TU CAPITAL</h2>
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -471,10 +493,10 @@ export default function CalculadoraForm() {
           )}
 
           {/* Botones de acción */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 mb-6 w-full max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 w-full max-w-4xl mx-auto">
             <Button
               variant="outline"
-              className="w-full text-blue-600 border-blue-600 hover:bg-blue-50"
+              className="w-full"
               onClick={handleReset}
             >
               <RefreshCw className="w-4 h-4 mr-2" />
@@ -482,7 +504,7 @@ export default function CalculadoraForm() {
             </Button>
             <Button
               variant="outline"
-              className="w-full text-red-600 border-red-600 hover:bg-red-50"
+              className="w-full"
               onClick={exportarPDF}
               disabled={isExportingPDF}
             >
@@ -548,6 +570,48 @@ export default function CalculadoraForm() {
                     </div>
                   </motion.div>
                 )}
+              </div>
+              
+              {/* Distribución de tu capital (proporción de capital invertido vs ganancia) */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-stone-600 mb-2">DISTRIBUCIÓN DE TU CAPITAL</h3>
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200">
+                  {(() => {
+                    const proporcionCapital = (resultados.total_invertido / resultados.monto_total) * 100;
+                    const proporcionGanancia = (resultados.ganancia_neta / resultados.monto_total) * 100;
+                    
+                    return (
+                      <>
+                        <div className="w-full h-6 bg-stone-200 rounded-full overflow-hidden mb-3">
+                          <div className="flex h-full">
+                            <div 
+                              className="h-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium"
+                              style={{ width: `${proporcionCapital}%` }}
+                            >
+                              {proporcionCapital >= 15 ? `${proporcionCapital.toFixed(0)}%` : ''}
+                            </div>
+                            <div 
+                              className="h-full bg-green-500 flex items-center justify-center text-xs text-white font-medium"
+                              style={{ width: `${proporcionGanancia}%` }}
+                            >
+                              {proporcionGanancia >= 15 ? `${proporcionGanancia.toFixed(0)}%` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span className="text-stone-600">Capital invertido: {formatCurrency(resultados.total_invertido)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span className="text-stone-600">Ganancia: {formatCurrency(resultados.ganancia_neta)}</span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
               
               {/* Intereses mensuales vs Costo de vida */}

@@ -71,11 +71,76 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-4xl mx-auto text-center mb-8">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-900">
-            Planifica tu retiro con confianza
+            Calculadora de Inversión para tu Retiro
           </h1>
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
-            Descubre cuánto necesitas ahorrar hoy para asegurar un retiro tranquilo mañana con nuestra calculadora de inversión.
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+            Planifica tu futuro financiero y descubre cómo alcanzar la independencia financiera
           </p>
+
+          {/* CTA Section movida arriba */}
+          <div className="text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border border-slate-100 mb-16">
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+                  {userName && !editingName ? `¡Hola ${userName}!` : 'Calcula tu plan de retiro personalizado'}
+                </h2>
+                {userName && !editingName && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 px-2"
+                    onClick={() => {
+                      setEditingName(true);
+                      setInputName("");
+                    }}
+                  >
+                    <span className="sr-only">Editar nombre</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                  </Button>
+                )}
+              </div>
+              <p className="text-slate-600 max-w-lg mx-auto mb-6">
+                Nuestra calculadora te ayudará a visualizar el crecimiento de tus inversiones y planificar un retiro
+                financieramente seguro según tu estilo de vida deseado.
+              </p>
+            </div>
+
+            {editingName || !userName ? (
+              <div className="max-w-xs mx-auto mb-4">
+                <Input
+                  type="text"
+                  placeholder="Tu nombre..."
+                  value={inputName}
+                  onChange={(e) => setInputName(e.target.value)}
+                  className="text-center"
+                />
+              </div>
+            ) : null}
+
+            <Button 
+              size="lg" 
+              className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+              onClick={() => {
+                if (editingName || !userName) {
+                  if (inputName.trim()) {
+                    localStorage.setItem("userName", inputName.trim());
+                    setUserName(inputName.trim());
+                    setEditingName(false);
+                  } else if (editingName) {
+                    localStorage.removeItem("userName");
+                    setUserName("");
+                    setEditingName(false);
+                  }
+                }
+                router.push("/calculadora");
+              }}
+            >
+              Empezar ahora
+              <ArrowRight className="ml-2" size={20} />
+            </Button>
+
+            <p className="text-sm text-slate-500 mt-4">Toma el control de tu futuro financiero en menos de 5 minutos</p>
+          </div>
         </div>
 
         {/* Phrases Carousel */}
@@ -101,7 +166,7 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Dots navigation - moved outside the relative container */}
+          {/* Dots navigation */}
           <div className="flex justify-center gap-2 mt-2">
             {phrases.map((_, index) => (
               <button
@@ -116,107 +181,131 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Section with enhanced design */}
-        <div className="text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md border border-slate-100 mb-16">
-          <div className="space-y-3">
-            <div className="flex items-center justify-center gap-2">
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-                {userName && !editingName ? `¡Hola ${userName}!` : 'Calcula tu plan de retiro personalizado'}
-              </h2>
-              {userName && !editingName && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 px-2"
-                  onClick={() => {
-                    setEditingName(true);
-                    setInputName("");
-                  }}
-                >
-                  <span className="sr-only">Editar nombre</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                </Button>
-              )}
+        {/* Nueva sección de pasos */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 mb-12">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-primary/60 transition-colors">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-primary font-bold text-xl">1</span>
             </div>
-            <p className="text-slate-600 max-w-lg mx-auto mb-6">
-              Nuestra calculadora te ayudará a visualizar el crecimiento de tus inversiones y planificar un retiro
-              financieramente seguro según tu estilo de vida deseado.
+            <h3 className="text-lg font-semibold text-stone-900 mb-2">Datos Personales</h3>
+            <p className="text-stone-600 text-sm">
+              Ingresa tu edad actual, edad deseada de retiro y el costo de vida mensual que aspiras mantener durante tu jubilación.
             </p>
           </div>
 
-          {editingName || !userName ? (
-            <div className="max-w-xs mx-auto mb-4">
-              <Input
-                type="text"
-                placeholder="Tu nombre..."
-                value={inputName}
-                onChange={(e) => setInputName(e.target.value)}
-                className="text-center"
-              />
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-primary/60 transition-colors">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-primary font-bold text-xl">2</span>
             </div>
-          ) : null}
+            <h3 className="text-lg font-semibold text-stone-900 mb-2">Plan de Inversión</h3>
+            <p className="text-stone-600 text-sm">
+              Define tu capital inicial, aportes mensuales y selecciona el rendimiento esperado según tu perfil de riesgo.
+            </p>
+          </div>
 
-          <Button 
-            size="lg" 
-            className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-            onClick={() => {
-              // Si está editando o no tiene nombre, guardar el nombre ingresado
-              if (editingName || !userName) {
-                if (inputName.trim()) {
-                  localStorage.setItem("userName", inputName.trim());
-                  setUserName(inputName.trim());
-                  setEditingName(false);
-                } else if (editingName) {
-                  // Si estaba editando y dejó el campo vacío, eliminar el nombre
-                  localStorage.removeItem("userName");
-                  setUserName("");
-                  setEditingName(false);
-                }
-              }
-              router.push("/calculadora");
-            }}
-          >
-            Empezar ahora
-            <ArrowRight className="ml-2" size={20} />
-          </Button>
-
-          <p className="text-sm text-slate-500 mt-4">Toma el control de tu futuro financiero en menos de 5 minutos</p>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-primary/60 transition-colors">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-primary font-bold text-xl">3</span>
+            </div>
+            <h3 className="text-lg font-semibold text-stone-900 mb-2">Análisis Detallado</h3>
+            <p className="text-stone-600 text-sm">
+              Obtén proyecciones financieras, tiempo para alcanzar la independencia financiera y recomendaciones personalizadas.
+            </p>
+          </div>
         </div>
 
-        {/* Process Steps - now more visually connected */}
+        {/* Nueva sección de beneficios */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          <div className="bg-stone-50 p-6 rounded-lg border border-stone-200">
+            <h3 className="text-lg font-semibold text-stone-900 mb-3">¿Qué obtendrás?</h3>
+            <ul className="text-left text-stone-600 space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Proyección detallada del crecimiento de tu capital
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Cálculo del tiempo necesario para alcanzar la independencia financiera
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Análisis del impacto de la inflación en tus ahorros
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Recomendaciones personalizadas para optimizar tu plan
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-stone-50 p-6 rounded-lg border border-stone-200">
+            <h3 className="text-lg font-semibold text-stone-900 mb-3">Características</h3>
+            <ul className="text-left text-stone-600 space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Resultados descargables en PDF
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Gráficos interactivos de proyección
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Comparativas de diferentes escenarios
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                Respuestas a preguntas frecuentes sobre tu plan
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Sección de Preguntas Frecuentes */}
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-2xl font-bold text-center mb-8 text-slate-800">Cómo funciona</h3>
-          <div className="grid md:grid-cols-3 gap-5">
+          <h3 className="text-2xl font-bold text-center mb-8 text-slate-800">Preguntas Frecuentes</h3>
+          <div className="space-y-4">
             <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-primary font-bold">1</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Ingresa tus datos</h3>
+              <h4 className="text-lg font-semibold mb-2">¿Qué es la independencia financiera?</h4>
               <p className="text-slate-600">
-                Personaliza tu plan de retiro con información sobre tu edad, estilo de vida y capacidad de ahorro.
+                La independencia financiera se alcanza cuando tus inversiones generan suficientes intereses para cubrir todos tus gastos mensuales, 
+                sin necesidad de seguir trabajando o aportar más dinero.
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-primary font-bold">2</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Calcula tu inversión</h3>
+              <h4 className="text-lg font-semibold mb-2">¿Por qué es importante el interés compuesto?</h4>
               <p className="text-slate-600">
-                Visualiza cómo crecerán tus inversiones con el tiempo y el poder del interés compuesto.
+                El interés compuesto es considerado la octava maravilla del mundo porque genera "interés sobre el interés", 
+                creando un efecto de bola de nieve que acelera el crecimiento de tu dinero con el tiempo.
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-primary font-bold">3</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Planifica tu retiro</h3>
+              <h4 className="text-lg font-semibold mb-2">¿Cómo afecta la inflación a mi retiro?</h4>
               <p className="text-slate-600">
-                Obtén un plan claro para alcanzar tus metas financieras y asegurar un retiro cómodo y sin preocupaciones.
+                La inflación reduce el poder adquisitivo de tu dinero con el tiempo. Nuestra calculadora tiene en cuenta este factor 
+                para asegurar que tus proyecciones sean realistas y mantengas tu nivel de vida durante el retiro.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
+              <h4 className="text-lg font-semibold mb-2">¿Cuándo es el mejor momento para empezar?</h4>
+              <p className="text-slate-600">
+                El mejor momento para empezar a planificar tu retiro es ahora. Cuanto antes comiences, más tiempo tendrá tu dinero 
+                para crecer gracias al interés compuesto, y menor será el aporte mensual necesario para alcanzar tus metas.
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="max-w-4xl mx-auto mt-12 p-4 bg-stone-50 rounded-lg border border-stone-200">
+          <p className="text-xs text-stone-600 leading-relaxed text-center">
+            Esta calculadora proporciona estimaciones con fines exclusivamente educativos e informativos. Los resultados mostrados 
+            no constituyen asesoramiento financiero ni garantía de rendimiento futuro. Las proyecciones son hipotéticas y no consideran 
+            factores como impuestos, comisiones o condiciones económicas imprevistas.
+          </p>
         </div>
       </div>
     </div>
