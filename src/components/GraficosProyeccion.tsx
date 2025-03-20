@@ -76,7 +76,7 @@ export function GraficosProyeccion({ resultados }: GraficosProyeccionProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 bg-blue-50 text-blue-600 border-blue-600 hover:bg-blue-100">
+        <Button variant="outline" className="w-full gap-2 text-red-600 border-red-600 hover:bg-red-50">
           <BarChart className="w-4 h-4" />
           Ver Gráficos de Proyección
         </Button>

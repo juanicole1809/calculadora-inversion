@@ -66,6 +66,7 @@ interface FormData {
   inversion_mensual: number
   rendimiento_anual: number | string
   inflacion_anual: number | string
+  actualizar_aporte_por_inflacion?: boolean
 }
 
 export default function CalculadoraForm() {
@@ -74,12 +75,13 @@ export default function CalculadoraForm() {
   const [formData, setFormData] = useState<FormData>({
     edad_actual: 0,
     fecha_nacimiento: new Date(''), // Fecha inválida que se mostrará como vacía
-    edad_retiro: 0,
+    edad_retiro: 65,
     costo_vida_mensual: 0,
     capital_inicial: 0,
     inversion_mensual: 0,
     rendimiento_anual: 6, // Valor por defecto actualizado a 6%
-    inflacion_anual: 3.5
+    inflacion_anual: 3.5,
+    actualizar_aporte_por_inflacion: true
   })
   // Estado para el texto del campo de fecha
   const [textoFecha, setTextoFecha] = useState('')
@@ -205,6 +207,7 @@ export default function CalculadoraForm() {
         parseFloat(formData.inflacion_anual) || 0 : formData.inflacion_anual,
       total_anios: total_anios,
       costo_vida_mensual: formData.costo_vida_mensual,
+      actualizar_aporte_por_inflacion: formData.actualizar_aporte_por_inflacion || false
     }
 
     try {
@@ -413,6 +416,16 @@ export default function CalculadoraForm() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [nombreEscenario, setNombreEscenario] = useState(`Escenario ${new Date().toLocaleDateString()}`);
   
+  // Estado para la paginación de la tabla de proyección
+  const [paginaActual, setPaginaActual] = useState(1);
+  
+  // Función para cambiar la página
+  const cambiarPagina = (nuevaPagina: number, totalPaginas: number) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+      setPaginaActual(nuevaPagina);
+    }
+  };
+  
   // Función para guardar el escenario con el nombre proporcionado
   const confirmarGuardarEscenario = () => {
     try {
@@ -482,6 +495,7 @@ export default function CalculadoraForm() {
           handleNextStep={handleNextStep}
           handlePrevStep={handlePrevStep}
           capitalizeName={capitalizeName}
+          setFormStep={setFormStep}
         />
       </div>
 
@@ -519,7 +533,59 @@ export default function CalculadoraForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Total acumulado primero */}
+              {/* Detalles de la inversión */}
+              <div className="mb-4">
+                <Button 
+                  type="button"
+                  onClick={() => setDetallesAbiertos(!detallesAbiertos)}
+                  variant="outline"
+                  className="w-full mb-3 flex justify-between items-center py-2 border-stone-200 bg-stone-50"
+                >
+                  <span className="font-medium text-stone-800">Detalles de tu inversión</span>
+                  <span className={`transition-transform duration-200 ${detallesAbiertos ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </Button>
+                
+                {detallesAbiertos && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
+                        <div className="text-sm text-stone-500">Capital Inicial</div>
+                        <div className="text-lg font-medium">{formatCurrency(resultados.capital_inicial)}</div>
+                      </div>
+                      
+                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
+                        <div className="text-sm text-stone-500">Aporte Mensual</div>
+                        <div className="text-lg font-medium">{formatCurrency(resultados.inversion_mensual)}</div>
+                      </div>
+                      
+                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
+                        <div className="text-sm text-stone-500">Total Aportado</div>
+                        <div className="text-lg font-medium">{formatCurrency(resultados.total_aportes_mensuales)}</div>
+                      </div>
+                      
+                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
+                        <div className="text-sm text-stone-500">Total Invertido</div>
+                        <div className="text-lg font-medium">{formatCurrency(resultados.total_invertido)}</div>
+                      </div>
+                      
+                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200 sm:col-span-2">
+                        <div className="text-sm text-stone-500">Costo de Vida Mensual Actual</div>
+                        <div className="text-lg font-medium">{formatCurrency(resultados.costo_vida_inicial)}</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Total acumulado después */}
               <div className="mb-4">
                 <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 text-center">
                   <h3 className="text-lg font-semibold text-slate-800 mb-2">TOTAL ACUMULADO AL RETIRARTE</h3>
@@ -621,21 +687,21 @@ export default function CalculadoraForm() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Detalles de la inversión (primero) */}
+              {/* Nueva tabla de proyección anual con paginación */}
               <div className="mb-6">
                 <Button 
                   type="button"
-                  onClick={() => setDetallesAbiertos(!detallesAbiertos)}
+                  onClick={() => setProyeccionAbierta(!proyeccionAbierta)}
                   variant="outline"
                   className="w-full mb-3 flex justify-between items-center py-2 border-stone-200 bg-stone-50"
                 >
-                  <span className="font-medium text-stone-800">Detalles de tu inversión</span>
-                  <span className={`transition-transform duration-200 ${detallesAbiertos ? 'rotate-180' : ''}`}>
+                  <span className="font-medium text-stone-800">Proyección detallada por año de tu Plan de Retiro</span>
+                  <span className={`transition-transform duration-200 ${proyeccionAbierta ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
                 </Button>
                 
-                {detallesAbiertos && (
+                {proyeccionAbierta && resultados.proyeccionAnual && resultados.proyeccionAnual.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -643,38 +709,123 @@ export default function CalculadoraForm() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
-                        <div className="text-sm text-stone-500">Capital Inicial</div>
-                        <div className="text-lg font-medium">{formatCurrency(resultados.capital_inicial)}</div>
-                      </div>
+                    {(() => {
+                      // Variables para la paginación
+                      const filasProPagina = 10;
+                      const totalPaginas = Math.ceil(resultados.proyeccionAnual.length / filasProPagina);
                       
-                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
-                        <div className="text-sm text-stone-500">Aporte Mensual</div>
-                        <div className="text-lg font-medium">{formatCurrency(resultados.inversion_mensual)}</div>
-                      </div>
+                      // Mostrar solo 10 filas por página
+                      const filasMostradas = resultados.proyeccionAnual.slice(
+                        (paginaActual - 1) * filasProPagina,
+                        paginaActual * filasProPagina
+                      );
                       
-                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
-                        <div className="text-sm text-stone-500">Total Aportado</div>
-                        <div className="text-lg font-medium">{formatCurrency(resultados.total_aportes_mensuales)}</div>
-                      </div>
-                      
-                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200">
-                        <div className="text-sm text-stone-500">Total Invertido</div>
-                        <div className="text-lg font-medium">{formatCurrency(resultados.total_invertido)}</div>
-                      </div>
-                      
-                      <div className="bg-stone-50 p-3 rounded-lg border border-stone-200 sm:col-span-2">
-                        <div className="text-sm text-stone-500">Costo de Vida Mensual Actual</div>
-                        <div className="text-lg font-medium">{formatCurrency(resultados.costo_vida_inicial)}</div>
-                      </div>
-                    </div>
+                      return (
+                        <>
+                          <div className="overflow-x-auto mt-3">
+                            <table className="w-full border-collapse text-sm">
+                              <thead>
+                                <tr className="bg-stone-100">
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Año</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Edad</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Aportes del año</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Aportes acumulados</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Rendimiento del año</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Rendimiento acumulado</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Saldo final</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filasMostradas.map((proyeccion, index) => {
+                                  const numeroFila = (paginaActual - 1) * filasProPagina + index;
+                                  const añoActual = new Date().getFullYear() + numeroFila;
+                                  const edadActual = formData.edad_actual + numeroFila;
+                                  
+                                  // Calcular aportes anuales (aprox. inversion_mensual * 12)
+                                  const aportesAnuales = numeroFila === 0 
+                                    ? resultados.capital_inicial + (resultados.inversion_mensual * 12)
+                                    : resultados.inversion_mensual * 12 * Math.pow(1 + (uiValues.inflacionAnual / 100), numeroFila);
+                                  
+                                  // Rendimiento del año (diferencia entre saldo y aportes acumulados del año anterior más aportes anuales)
+                                  let rendimientoAnual = 0;
+                                  if (numeroFila === 0) {
+                                    rendimientoAnual = proyeccion.rendimientoAcumulado;
+                                  } else {
+                                    const saldoAnterior = resultados.proyeccionAnual[numeroFila - 1].saldo;
+                                    rendimientoAnual = proyeccion.saldo - saldoAnterior - aportesAnuales;
+                                  }
+                                  
+                                  return (
+                                    <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-stone-50"}>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs">{añoActual}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs">{edadActual}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs">{formatCurrency(aportesAnuales)}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs">{formatCurrency(proyeccion.aportesAcumulados)}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs text-emerald-600 font-medium">{formatCurrency(rendimientoAnual)}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs text-emerald-700 font-medium">{formatCurrency(proyeccion.rendimientoAcumulado)}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs bg-blue-50 text-blue-700 font-medium">{formatCurrency(proyeccion.saldo)}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                          
+                          {/* Paginación */}
+                          {totalPaginas > 1 && (
+                            <div className="flex justify-between items-center mt-4">
+                              <span className="text-xs text-stone-500">
+                                Página {paginaActual} de {totalPaginas}
+                              </span>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => cambiarPagina(1, totalPaginas)}
+                                  disabled={paginaActual === 1}
+                                  className="text-xs h-8"
+                                >
+                                  Primera
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => cambiarPagina(paginaActual - 1, totalPaginas)}
+                                  disabled={paginaActual === 1}
+                                  className="text-xs h-8"
+                                >
+                                  Anterior
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => cambiarPagina(paginaActual + 1, totalPaginas)}
+                                  disabled={paginaActual === totalPaginas}
+                                  className="text-xs h-8"
+                                >
+                                  Siguiente
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => cambiarPagina(totalPaginas, totalPaginas)}
+                                  disabled={paginaActual === totalPaginas}
+                                  className="text-xs h-8"
+                                >
+                                  Última
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </motion.div>
                 )}
               </div>
               
               {/* Intereses mensuales vs Costo de vida */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col">
                   <span className="text-stone-600 text-sm font-medium mb-1">COSTO DE VIDA MENSUAL AL RETIRARTE</span>
                   <span className="text-stone-900 text-2xl font-bold">{formatCurrency(resultados.costo_vida_actualizado)}</span>
@@ -690,6 +841,25 @@ export default function CalculadoraForm() {
                       : resultados.monto_total * uiValues.rendimientoAnual / 100 / 12 >= resultados.costo_vida_actualizado 
                         ? "Suficientes para cubrir tu costo de vida" 
                         : "Insuficientes para tu costo de vida, necesitarás ir consumiendo capital"
+                    }
+                  </span>
+                </div>
+                
+                <div className="bg-stone-50 rounded-lg p-4 border border-stone-200 flex flex-col">
+                  <span className="text-stone-600 text-sm font-medium mb-1">DURACIÓN DE TU CAPITAL</span>
+                  <span className="text-stone-900 text-2xl font-bold">
+                    {resultados.anios_retiro === "∞" ? "Perpetuo" : 
+                      (() => {
+                        const anios = Math.floor(parseFloat(resultados.anios_retiro.toString()));
+                        const meses = Math.round((parseFloat(resultados.anios_retiro.toString()) - anios) * 12);
+                        return `${anios} ${anios === 1 ? 'año' : 'años'}${meses > 0 ? ` y ${meses} ${meses === 1 ? 'mes' : 'meses'}` : ''}`;
+                      })()
+                    }
+                  </span>
+                  <span className="text-stone-600 text-sm mt-2">
+                    {resultados.anios_retiro === "∞" 
+                      ? "El capital no se agotará, dado que los intereses cobrados serán mayores al costo de vida" 
+                      : "Tiempo antes de agotar el capital acumulado"
                     }
                   </span>
                 </div>
@@ -750,9 +920,49 @@ export default function CalculadoraForm() {
                   const aniosHastaRetiro = formData.edad_retiro - formData.edad_actual;
                   const mesesHastaRetiro = aniosHastaRetiro * 12;
                   const tasaMensual = uiValues.rendimientoAnual / 100 / 12;
-                  const factorCapitalizacion = tasaMensual === 0 ?
-                    mesesHastaRetiro : ((Math.pow(1 + tasaMensual, mesesHastaRetiro) - 1) / tasaMensual);
-                  const aporteNecesarioMensual = Math.max(0, capitalNecesario / factorCapitalizacion - (formData.capital_inicial * Math.pow(1 + tasaMensual, mesesHastaRetiro)) / factorCapitalizacion);
+                  const inflacionMensual = uiValues.inflacionAnual / 100 / 12;
+                  
+                  let aporteNecesarioMensual;
+                  
+                  if (formData.actualizar_aporte_por_inflacion) {
+                    // Cálculo ajustado considerando la actualización por inflación
+                    // Usamos una aproximación más precisa para la capitalización con aportes actualizados
+                    let montoProyectado = formData.capital_inicial;
+                    let aporteBase = 1000; // Comenzamos con un valor base razonable
+                    
+                    // Método de aproximación iterativa
+                    for (let intentos = 0; intentos < 12; intentos++) {
+                      montoProyectado = formData.capital_inicial;
+                      let aporteActual = aporteBase;
+                      
+                      // Simulamos el crecimiento con este aporte base
+                      for (let i = 0; i < mesesHastaRetiro; i++) {
+                        montoProyectado = (montoProyectado + aporteActual) * (1 + tasaMensual);
+                        // Actualizar el aporte cada 12 meses por inflación
+                        if ((i + 1) % 12 === 0) {
+                          aporteActual *= (1 + (uiValues.inflacionAnual / 100));
+                        }
+                      }
+                      
+                      // Ajustar el aporte base para la próxima iteración
+                      if (Math.abs(montoProyectado - capitalNecesario) < (capitalNecesario * 0.01)) {
+                        // Si estamos dentro del 1% del objetivo, consideramos que es suficientemente preciso
+                        break;
+                      } else if (montoProyectado < capitalNecesario) {
+                        aporteBase *= 1.2; // Aumentar si es insuficiente
+                      } else {
+                        aporteBase *= 0.8; // Disminuir si es excesivo
+                      }
+                    }
+                    
+                    aporteNecesarioMensual = aporteBase;
+                  } else {
+                    // Cálculo original sin actualización por inflación
+                    const factorCapitalizacion = tasaMensual === 0 ?
+                      mesesHastaRetiro : ((Math.pow(1 + tasaMensual, mesesHastaRetiro) - 1) / tasaMensual);
+                    aporteNecesarioMensual = Math.max(0, capitalNecesario / factorCapitalizacion - (formData.capital_inicial * Math.pow(1 + tasaMensual, mesesHastaRetiro)) / factorCapitalizacion);
+                  }
+                  
                   const aporteAdicionalMensual = Math.max(0, aporteNecesarioMensual - formData.inversion_mensual);
                   
                   // Si no se logrará con los aportes actuales
@@ -770,6 +980,11 @@ export default function CalculadoraForm() {
                           <p className="text-stone-800 font-medium mb-2">¿Quieres lograr independencia financiera a los {formData.edad_retiro} años?</p>
                           <p className="text-stone-700">
                             Necesitarías aportar <strong>{formatCurrency(aporteNecesarioMensual)}</strong> mensuales desde ahora hasta tu retiro.
+                            {formData.actualizar_aporte_por_inflacion && (
+                              <span className="block text-amber-700 text-sm mt-1 italic">
+                                Este monto se incrementará anualmente según la inflación del {uiValues.inflacionAnual}%.
+                              </span>
+                            )}
                           </p>
                           <p className="text-amber-600 font-medium mt-2">
                             Eso significa <strong>{formatCurrency(aporteAdicionalMensual)}</strong> adicionales a tu aporte actual de {formatCurrency(formData.inversion_mensual)}.
@@ -803,7 +1018,7 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left pr-2">¿Qué significa que puedo vivir de los intereses?</span>
+                    <span className="font-medium text-stone-800 text-left pr-4">¿Qué significa que puedo vivir de los intereses?</span>
                     <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta1' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
@@ -812,7 +1027,7 @@ export default function CalculadoraForm() {
                   {activeInfoBox === 'pregunta1' && (
                     <div className="p-4 bg-white">
                       <p className="text-stone-700 mb-2">
-                        {userName ? `${capitalizeName(userName)}, vivir de los intereses` : 'Vivir de los intereses'} significa que el dinero que genera tu capital invertido cada mes (los intereses) 
+                        Vivir de los intereses significa que el dinero que genera tu capital invertido cada mes (los intereses) 
                         es suficiente para cubrir todos tus gastos mensuales, sin necesidad de tocar el capital principal.
                       </p>
                       <p className="text-stone-700">
@@ -838,7 +1053,7 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left pr-2">¿Cuál es la diferencia entre mi monto invertido y mi ganancia?</span>
+                    <span className="font-medium text-stone-800 text-left pr-4">¿Cuál es la diferencia entre mi monto invertido y mi ganancia?</span>
                     <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta2' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
@@ -873,7 +1088,7 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left pr-2">¿Qué significa la duración de mi capital?</span>
+                    <span className="font-medium text-stone-800 text-left pr-4">¿Qué significa la duración de mi capital?</span>
                     <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta3' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
@@ -942,7 +1157,7 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left pr-2">¿Qué debo cambiar para mejorar mi plan de retiro?</span>
+                    <span className="font-medium text-stone-800 text-left pr-4">¿Qué debo cambiar para mejorar mi plan de retiro?</span>
                     <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta4' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
@@ -960,11 +1175,49 @@ export default function CalculadoraForm() {
                         const capitalFaltante = capitalNecesario - resultados.monto_total;
                         
                         const tasaMensual = uiValues.rendimientoAnual / 100 / 12;
-                        const factorCapitalizado = tasaMensual === 0 ? 
-                          mesesRestantes : ((Math.pow(1 + tasaMensual, mesesRestantes) - 1) / tasaMensual);
                         
-                        // La fórmula para calcular el aporte mensual necesario
-                        const aporteOptimoMensual = capitalFaltante / factorCapitalizado;
+                        // Usar la misma lógica que en la sección de independencia financiera
+                        let aporteOptimoMensual;
+                        
+                        if (formData.actualizar_aporte_por_inflacion) {
+                          // Cálculo ajustado considerando la actualización por inflación
+                          // Usamos una aproximación más precisa para la capitalización con aportes actualizados
+                          let montoProyectado = formData.capital_inicial;
+                          let aporteBase = 1000; // Comenzamos con un valor base razonable
+                          
+                          // Método de aproximación iterativa
+                          for (let intentos = 0; intentos < 12; intentos++) {
+                            montoProyectado = formData.capital_inicial;
+                            let aporteActual = aporteBase;
+                            
+                            // Simulamos el crecimiento con este aporte base
+                            for (let i = 0; i < mesesRestantes; i++) {
+                              montoProyectado = (montoProyectado + aporteActual) * (1 + tasaMensual);
+                              // Actualizar el aporte cada 12 meses por inflación
+                              if ((i + 1) % 12 === 0) {
+                                aporteActual *= (1 + (uiValues.inflacionAnual / 100));
+                              }
+                            }
+                            
+                            // Ajustar el aporte base para la próxima iteración
+                            if (Math.abs(montoProyectado - capitalNecesario) < (capitalNecesario * 0.01)) {
+                              // Si estamos dentro del 1% del objetivo, consideramos que es suficientemente preciso
+                              break;
+                            } else if (montoProyectado < capitalNecesario) {
+                              aporteBase *= 1.2; // Aumentar si es insuficiente
+                            } else {
+                              aporteBase *= 0.8; // Disminuir si es excesivo
+                            }
+                          }
+                          
+                          aporteOptimoMensual = aporteBase;
+                        } else {
+                          // Cálculo original sin actualización por inflación
+                          const factorCapitalizado = tasaMensual === 0 ? 
+                            mesesRestantes : ((Math.pow(1 + tasaMensual, mesesRestantes) - 1) / tasaMensual);
+                          aporteOptimoMensual = Math.max(0, capitalFaltante / factorCapitalizado);
+                        }
+                        
                         const aporteTotal = aporteOptimoMensual + formData.inversion_mensual;
                         
                         // Si ya alcanzaste independencia financiera
@@ -1022,6 +1275,88 @@ export default function CalculadoraForm() {
                                   alcanzarías la independencia financiera más rápido, aunque esto generalmente implica asumir más riesgo.
                                 </p>
                               </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Nueva Pregunta 5: ¿Cuál es mi tasa de retiro segura? */}
+                <div className="mb-3 border border-stone-200 rounded-lg overflow-hidden">
+                  <Button 
+                    type="button"
+                    onClick={() => setActiveInfoBox(activeInfoBox === 'pregunta5' ? null : 'pregunta5')}
+                    variant="ghost"
+                    className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
+                  >
+                    <span className="font-medium text-stone-800 text-left pr-4">¿Cuál es mi tasa de retiro segura?</span>
+                    <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta5' ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </Button>
+                  
+                  {activeInfoBox === 'pregunta5' && (
+                    <div className="p-4 bg-white">
+                      {(() => {
+                        // Calcular la tasa de retiro segura basada en el rendimiento anual
+                        const tasaRetiroSeguraAnual = uiValues.rendimientoAnual === 0 ? 0 : Math.min(4, uiValues.rendimientoAnual * 0.8);
+                        
+                        // Calcular el monto mensual seguro que puede retirar
+                        const montoRetiroSeguroMensual = (resultados.monto_total * (tasaRetiroSeguraAnual / 100)) / 12;
+                        
+                        // Porcentaje que representa del costo de vida deseado
+                        const porcentajeCobertura = resultados.costo_vida_actualizado === 0 ? 
+                          100 : (montoRetiroSeguroMensual / resultados.costo_vida_actualizado) * 100;
+                        
+                        return (
+                          <>
+                            <div className="mb-4">
+                              <p className="text-stone-700 mb-3">
+                                La tasa de retiro segura es el porcentaje de tu capital que puedes retirar anualmente con 
+                                una alta probabilidad de que tu dinero dure toda tu vida, incluso considerando 
+                                períodos de volatilidad en los mercados.
+                              </p>
+                              
+                              <p className="text-stone-700 mb-3">
+                                Basado en estudios financieros históricos y considerando tu rendimiento anual del {uiValues.rendimientoAnual}%, 
+                                una tasa de retiro segura para ti sería aproximadamente del <strong>{tasaRetiroSeguraAnual.toFixed(1)}% anual</strong>.
+                              </p>
+                            </div>
+                            
+                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-4">
+                              <h4 className="font-medium text-blue-800 mb-2">Tu retiro seguro mensual</h4>
+                              <p className="text-lg font-bold text-blue-700 mb-2">{formatCurrency(montoRetiroSeguroMensual)}</p>
+                              <p className="text-sm text-blue-600">
+                                Este es el monto que podrías retirar mensualmente con una alta probabilidad de que tu capital dure toda tu vida.
+                              </p>
+                            </div>
+                            
+                            {montoRetiroSeguroMensual < resultados.costo_vida_actualizado ? (
+                              <div>
+                                <p className="text-amber-700 mb-3">
+                                  Este monto representa el <strong>{porcentajeCobertura.toFixed(1)}%</strong> de tu costo de vida deseado 
+                                  de {formatCurrency(resultados.costo_vida_actualizado)}.
+                                </p>
+                                <p className="text-stone-700">
+                                  Para cubrir el 100% de tus gastos siguiendo esta estrategia conservadora, necesitarías acumular aproximadamente {' '}
+                                  <strong>{formatCurrency((resultados.costo_vida_actualizado * 12) / (tasaRetiroSeguraAnual / 100))}</strong> 
+                                  antes de retirarte, o bien ajustar tu costo de vida mensual a {formatCurrency(montoRetiroSeguroMensual)}.
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="text-green-700">
+                                ¡Buenas noticias! Este monto cubre el <strong>{Math.min(porcentajeCobertura, 100).toFixed(1)}%</strong> de tu costo de vida deseado. 
+                                Podrías retirar hasta {formatCurrency(montoRetiroSeguroMensual)} mensuales manteniendo la seguridad de que tu capital durará a largo plazo.
+                              </p>
+                            )}
+                            
+                            <div className="mt-4 text-sm text-stone-500">
+                              <p className="italic">
+                                Nota: La tasa de retiro segura tradicional es del 4% anual, pero la adaptamos según tu rendimiento esperado. 
+                                Esta es una referencia conservadora diseñada para soportar incluso períodos de mercado adversos.
+                              </p>
                             </div>
                           </>
                         );

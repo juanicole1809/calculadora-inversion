@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
-import { InfoIcon, XIcon, ArrowRight, ArrowLeft, Calculator } from 'lucide-react'
+import { InfoIcon, XIcon, ArrowRight, ArrowLeft, Calculator, Settings } from 'lucide-react'
 import { 
   Select, 
   SelectContent, 
@@ -15,18 +15,40 @@ import {
 } from './ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { cn } from '../lib/utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
+import { Switch } from './ui/switch'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+interface FormData {
+  edad_actual: number
+  fecha_nacimiento: Date
+  edad_retiro: number
+  costo_vida_mensual: number
+  capital_inicial: number
+  inversion_mensual: number
+  rendimiento_anual: number | string
+  inflacion_anual: number | string
+  actualizar_aporte_por_inflacion?: boolean
+}
 
 interface FormProps {
-  formData: {
-    edad_actual: number
-    fecha_nacimiento: Date
-    edad_retiro: number
-    costo_vida_mensual: number
-    capital_inicial: number
-    inversion_mensual: number
-    rendimiento_anual: number | string
-    inflacion_anual: number | string
-  }
+  formData: FormData
   textoFecha: string
   formStep: number
   validationErrors: Record<string, string>
@@ -36,8 +58,8 @@ interface FormProps {
   isLoading: boolean
   userName: string | null
   setTextoFecha: (texto: string) => void
-  setFormData: (data: any) => void
-  setValidationErrors: (errors: any) => void
+  setFormData: (data: FormData | ((prev: FormData) => FormData)) => void
+  setValidationErrors: (errors: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void
   setActiveInfoBox: (box: string | null) => void
   setInflacionPersonalizada: (value: boolean) => void
   setRendimientoPersonalizado: (value: boolean) => void
@@ -47,6 +69,7 @@ interface FormProps {
   handleNextStep: () => void
   handlePrevStep: () => void
   capitalizeName: (name: string) => string
+  setFormStep: (step: number) => void
 }
 
 export default function FormularioCalculadora({
@@ -70,19 +93,72 @@ export default function FormularioCalculadora({
   handleSubmit,
   handleNextStep,
   handlePrevStep,
-  capitalizeName
+  capitalizeName,
+  setFormStep
 }: FormProps) {
+  const [configOpen, setConfigOpen] = useState(false);
+
+  // Validar datos personales para cambiar pestañas
+  const validarYCambiarAInversion = () => {
+    const errors = validatePersonalData(formData);
+    if (Object.keys(errors).length === 0) {
+      setFormStep(1);
+    } else {
+      setValidationErrors(errors);
+    }
+  };
+
   return (
     <Card id="calculadora-form">
-      <CardHeader>
-        <CardTitle>
-          {userName ? 
-            `${capitalizeName(userName)}, ingresa tus datos` :
-            `Ingresa tus datos`}
-        </CardTitle>
-        <CardDescription>
-          Completa todos los campos para calcular tu plan de retiro
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>
+            {userName ? 
+              `${capitalizeName(userName)}, ingresa tus datos` :
+              `Ingresa tus datos`}
+          </CardTitle>
+          <CardDescription>
+            Completa todos los campos para calcular tu plan de retiro
+          </CardDescription>
+        </div>
+        <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-8 flex items-center gap-1.5"
+            >
+              <Settings className="h-3.5 w-3.5" />
+              <span>Opciones</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Opciones de cálculo</DialogTitle>
+              <DialogDescription>
+                Ajusta la configuración avanzada de los cálculos
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="actualizar-aporte-inflacion" className="text-stone-700">
+                  Actualizar aporte por inflación
+                  <div className="text-xs text-stone-500 font-normal mt-1">
+                    Incrementa el aporte mensual cada año según la inflación
+                  </div>
+                </Label>
+                <Switch 
+                  id="actualizar-aporte-inflacion"
+                  checked={formData.actualizar_aporte_por_inflacion !== false}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    actualizar_aporte_por_inflacion: checked
+                  }))}
+                />
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       
       {/* Progress indicator */}
@@ -587,4 +663,20 @@ export default function FormularioCalculadora({
       </CardFooter>
     </Card>
   )
+}
+
+// Función auxiliar para validar los datos personales
+function validatePersonalData(formData: any) {
+  const errors: Record<string, string> = {};
+  
+  // Solo mostramos error de fecha de nacimiento si está vacía o si tiene un formato incorrecto
+  if (!formData.fecha_nacimiento || 
+      (!(formData.fecha_nacimiento instanceof Date) || isNaN(formData.fecha_nacimiento.getTime()))) {
+    errors.fecha_nacimiento = "La fecha de nacimiento es requerida y debe ser válida";
+  }
+  if (!formData.edad_retiro && formData.edad_retiro !== 0) errors.edad_retiro = "La edad de retiro es requerida";
+  if (formData.edad_retiro <= formData.edad_actual) errors.edad_retiro = "La edad de retiro debe ser mayor a la edad actual";
+  if (!formData.costo_vida_mensual && formData.costo_vida_mensual !== 0) errors.costo_vida_mensual = "El costo de vida mensual es requerido";
+  
+  return errors;
 } 

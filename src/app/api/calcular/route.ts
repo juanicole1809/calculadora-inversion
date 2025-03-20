@@ -6,7 +6,8 @@ function calcularInversion(
   tasa_anual: number,
   total_anios: number,
   costo_vida_mensual: number,
-  inflacion_anual: number
+  inflacion_anual: number,
+  actualizar_aporte_por_inflacion: boolean = false
 ) {
   // Convertir años a meses
   const total_meses = Math.floor(total_anios * 12)
@@ -18,23 +19,61 @@ function calcularInversion(
   // Cálculo del monto acumulado durante la fase de inversión
   let monto_total = capital_inicial
   if (tasa_anual === 0) {
-    // Si la tasa es 0%, simplemente sumamos los aportes sin interés
-    monto_total = capital_inicial + (inversion_mensual * total_meses)
+    if (actualizar_aporte_por_inflacion) {
+      // Si actualizamos los aportes por inflación
+      let aporte_mensual_actual = inversion_mensual;
+      for (let i = 0; i < total_meses; i++) {
+        monto_total += aporte_mensual_actual;
+        if ((i + 1) % 12 === 0) {
+          // Actualizamos el aporte cada 12 meses (anualmente)
+          aporte_mensual_actual *= (1 + (inflacion_anual / 100));
+        }
+      }
+    } else {
+      // Si la tasa es 0% y no actualizamos los aportes, simplemente sumamos los aportes sin interés
+      monto_total = capital_inicial + (inversion_mensual * total_meses);
+    }
   } else {
-    // Con interés compuesto
-    for (let i = 0; i < total_meses; i++) {
-      monto_total = (monto_total + inversion_mensual) * (1 + tasa_mensual)
+    if (actualizar_aporte_por_inflacion) {
+      // Con interés compuesto y actualización de aportes por inflación
+      let aporte_mensual_actual = inversion_mensual;
+      for (let i = 0; i < total_meses; i++) {
+        monto_total = (monto_total + aporte_mensual_actual) * (1 + tasa_mensual);
+        if ((i + 1) % 12 === 0) {
+          // Actualizamos el aporte cada 12 meses (anualmente)
+          aporte_mensual_actual *= (1 + (inflacion_anual / 100));
+        }
+      }
+    } else {
+      // Con interés compuesto y aporte fijo
+      for (let i = 0; i < total_meses; i++) {
+        monto_total = (monto_total + inversion_mensual) * (1 + tasa_mensual);
+      }
     }
   }
   
-  // Cálculo de totales de la fase de inversión
-  const total_aportes_mensuales = inversion_mensual * total_meses
-  const total_invertido = capital_inicial + total_aportes_mensuales
-  const ganancia_neta = monto_total - total_invertido
+  // Cálculo del total de aportes considerando si se actualizan por inflación
+  let total_aportes_mensuales;
+  if (actualizar_aporte_por_inflacion) {
+    // Recalculamos el total de aportes con inflación
+    total_aportes_mensuales = 0;
+    let aporte_mensual_actual = inversion_mensual;
+    for (let i = 0; i < total_meses; i++) {
+      total_aportes_mensuales += aporte_mensual_actual;
+      if ((i + 1) % 12 === 0) {
+        aporte_mensual_actual *= (1 + (inflacion_anual / 100));
+      }
+    }
+  } else {
+    total_aportes_mensuales = inversion_mensual * total_meses;
+  }
+  
+  const total_invertido = capital_inicial + total_aportes_mensuales;
+  const ganancia_neta = monto_total - total_invertido;
   
   // Actualizamos el costo de vida mensual con la inflación acumulada durante el periodo de inversión
-  const factor_inflacion = Math.pow(1 + (inflacion_anual / 100), total_anios)
-  const costo_vida_mensual_actualizado = costo_vida_mensual * factor_inflacion
+  const factor_inflacion = Math.pow(1 + (inflacion_anual / 100), total_anios);
+  const costo_vida_mensual_actualizado = costo_vida_mensual * factor_inflacion;
   
   // Generar proyección anual
   const proyeccionAnual = [];
@@ -51,16 +90,22 @@ function calcularInversion(
   });
   
   // Calcular para cada año
+  let aporte_mensual_actual = inversion_mensual;
   for (let año = 1; año <= total_anios; año++) {
     let saldoInicioAño = saldoAnual;
+    let aportesAño = 0;
     
     // Calcular 12 meses de este año
     for (let mes = 1; mes <= 12; mes++) {
-      saldoAnual = (saldoAnual + inversion_mensual) * (1 + tasa_mensual);
+      saldoAnual = (saldoAnual + aporte_mensual_actual) * (1 + tasa_mensual);
+      aportesAño += aporte_mensual_actual;
     }
     
-    // Calcular aportes y rendimiento de este año
-    const aportesAño = inversion_mensual * 12;
+    // Actualizar el aporte mensual por inflación si corresponde
+    if (actualizar_aporte_por_inflacion) {
+      aporte_mensual_actual *= (1 + (inflacion_anual / 100));
+    }
+    
     aportesAcumulados += aportesAño;
     
     // El rendimiento es la diferencia entre el saldo final y el saldo inicial + aportes
@@ -188,7 +233,8 @@ export async function POST(request: Request) {
       tasa_anual,
       total_anios,
       costo_vida_mensual,
-      inflacion_anual
+      inflacion_anual,
+      actualizar_aporte_por_inflacion
     } = body
 
     // Validar que todos los campos necesarios estén presentes
@@ -211,7 +257,8 @@ export async function POST(request: Request) {
       Number(tasa_anual),
       Number(total_anios),
       Number(costo_vida_mensual),
-      Number(inflacion_anual || 0)
+      Number(inflacion_anual || 0),
+      Boolean(actualizar_aporte_por_inflacion || false)
     )
 
     return NextResponse.json(resultados)
