@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
-import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer, PiggyBank } from 'lucide-react'
+import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer, PiggyBank, BarChart2 } from 'lucide-react'
 import { 
   Select, 
   SelectContent, 
@@ -22,6 +22,16 @@ import { createSimplePDF } from '../lib/simplePdf'
 import FormularioCalculadora from './FormularioCalculadora'
 import { GraficosProyeccion } from "./GraficosProyeccion"
 import { toast } from 'sonner'
+import { useEscenarios } from "@/context/escenarios-context";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface ResultadosInversion {
   capital_inicial: number
@@ -90,6 +100,9 @@ export default function CalculadoraForm() {
   // Referencia para el componente de resultados para exportar a PDF
   const resultadosRef = useRef<HTMLDivElement>(null)
   const [isExportingPDF, setIsExportingPDF] = useState(false)
+  
+  const router = useRouter();
+  const { agregarEscenario } = useEscenarios();
   
   // Cargar el nombre del usuario desde localStorage
   useEffect(() => {
@@ -222,7 +235,7 @@ export default function CalculadoraForm() {
       
       // Desplazamiento automático hacia los resultados
       setTimeout(() => {
-        const resultadosElement = document.getElementById('resultados-section');
+        const resultadosElement = document.getElementById('resumen-inversion');
         if (resultadosElement) {
           resultadosElement.scrollIntoView({ behavior: 'smooth' });
         }
@@ -384,6 +397,53 @@ export default function CalculadoraForm() {
   const porcentajeInvertido = resultados ? Math.round((resultados.total_invertido / resultados.monto_total) * 100) : 0;
   const porcentajeGanancia = resultados ? Math.round((resultados.ganancia_neta / resultados.monto_total) * 100) : 0;
 
+  // Función para guardar el escenario actual y navegar al comparador
+  const guardarEscenarioYComparar = () => {
+    if (!resultados) {
+      toast.error('Error: Primero debes calcular los resultados', {
+        closeButton: true
+      });
+      return;
+    }
+
+    setIsDialogOpen(true);
+  };
+  
+  // Estado para controlar el diálogo de guardar escenario
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [nombreEscenario, setNombreEscenario] = useState(`Escenario ${new Date().toLocaleDateString()}`);
+  
+  // Función para guardar el escenario con el nombre proporcionado
+  const confirmarGuardarEscenario = () => {
+    try {
+      // Crear escenario con los datos actuales
+      agregarEscenario({
+        nombre: nombreEscenario,
+        montoInicial: formData.capital_inicial,
+        aportacionMensual: formData.inversion_mensual,
+        tasaInteres: uiValues.rendimientoAnual,
+        inflacion: uiValues.inflacionAnual,
+        edadActual: formData.edad_actual,
+        edadRetiro: formData.edad_retiro,
+        costoVidaMensual: formData.costo_vida_mensual,
+        plazoAnios: formData.edad_retiro - formData.edad_actual
+      });
+
+      toast.success('Escenario guardado correctamente', {
+        closeButton: true
+      });
+
+      // Cerrar diálogo y navegar al comparador
+      setIsDialogOpen(false);
+      router.push('/comparador');
+    } catch (error) {
+      console.error('Error al guardar el escenario:', error);
+      toast.error('Error al guardar el escenario', {
+        closeButton: true
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-center mb-4">
@@ -393,9 +453,9 @@ export default function CalculadoraForm() {
         </h1>
       </div>
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-stone-900 mb-4">Calculadora de Inversión</h2>
+        <h2 className="text-3xl font-bold text-stone-900 mb-4">Planificador de Inversión para Retiro</h2>
         <p className="text-lg text-stone-600 mb-8">
-          Planifica tu futuro financiero calculando el potencial de tus ahorros para un retiro cómodo
+          Planifica tu futuro financiero calculando el potencial de tus ahorros para un retiro cómodo y seguro
         </p>
       </div>
 
@@ -427,76 +487,132 @@ export default function CalculadoraForm() {
 
       {resultados && (
         <>
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-4">DISTRIBUCIÓN DE TU CAPITAL</h2>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex w-full h-2 mb-4 overflow-hidden rounded-full">
-                <div
-                  className="bg-blue-500"
-                  style={{ width: `${porcentajeInvertido}%` }}
-                />
-                <div
-                  className="bg-emerald-500"
-                  style={{ width: `${porcentajeGanancia}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>Capital invertido: {formatCurrency(resultados.total_invertido)} USD</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                  <span>Ganancia: {formatCurrency(resultados.ganancia_neta)} USD</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Agregar el botón y componente de gráficos */}
-          {(() => {
-            console.log('Estado de resultados:', {
-              resultadosExiste: !!resultados,
-              proyeccionAnualExiste: !!resultados?.proyeccionAnual,
-              longitudProyeccion: resultados?.proyeccionAnual?.length
-            });
-            return null;
-          })()}
-          {resultados && resultados.proyeccionAnual && resultados.proyeccionAnual.length > 0 && (
-            <>
-              <div className="mt-6 flex justify-center">
-                <GraficosProyeccion 
-                  resultados={{
-                    montoFinal: resultados.monto_total,
-                    aportesTotales: resultados.total_invertido,
-                    rendimientoTotal: resultados.ganancia_neta,
-                    proyeccionAnual: resultados.proyeccionAnual
-                  }} 
-                />
-              </div>
-            </>
-          )}
-
-          {/* Botones de acción */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 mb-6 w-full max-w-3xl mx-auto">
+          {/* Botones de acción inmediatamente después del formulario */}
+          <div className="flex gap-4 mt-6 mb-6">
             <Button
               variant="outline"
-              className="w-full text-blue-600 border-blue-600 hover:bg-blue-50"
               onClick={handleReset}
+              className="flex-1"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Resetear valores
             </Button>
+            
             <Button
               variant="outline"
-              className="w-full text-red-600 border-red-600 hover:bg-red-50"
-              onClick={exportarPDF}
-              disabled={isExportingPDF}
+              className="flex-1 bg-blue-50 text-blue-600 border-blue-600 hover:bg-blue-100"
+              onClick={guardarEscenarioYComparar}
             >
-              <FileText className="w-4 h-4 mr-2" />
-              {isExportingPDF ? 'Generando PDF...' : 'Descargar PDF'}
+              <BarChart2 className="w-4 h-4 mr-2" />
+              Guardar y comparar escenarios
             </Button>
           </div>
+
+          {/* Card con el resumen de la inversión */}
+          <Card className="mt-6" id="resumen-inversion">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">
+                Resumen de tu Inversión
+              </CardTitle>
+              <CardDescription>
+                Proyección de capital y ganancias al momento de tu retiro
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Total acumulado primero */}
+              <div className="mb-4">
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 text-center">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">TOTAL ACUMULADO AL RETIRARTE</h3>
+                  <p className="text-3xl font-bold text-blue-700 mb-1">{formatCurrency(resultados.monto_total)}</p>
+                  <p className="text-sm text-slate-600">
+                    Este es el monto total que habrás acumulado al llegar a tu edad de retiro ({formData.edad_retiro} años)
+                  </p>
+                </div>
+              </div>
+
+              {/* Distribución del capital después */}
+              <div>
+                <h2 className="text-lg font-semibold mb-4">DISTRIBUCIÓN DE TU CAPITAL</h2>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex w-full h-2 mb-4 overflow-hidden rounded-full">
+                    <div
+                      className="bg-blue-500"
+                      style={{ width: `${porcentajeInvertido}%` }}
+                    />
+                    <div
+                      className="bg-emerald-500"
+                      style={{ width: `${porcentajeGanancia}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      <span>Capital invertido: {formatCurrency(resultados.total_invertido)} USD</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                      <span>Ganancia: {formatCurrency(resultados.ganancia_neta)} USD</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botones de gráficos y PDF */}
+              <div className="flex flex-wrap gap-4 mt-6">
+                {resultados && resultados.proyeccionAnual && resultados.proyeccionAnual.length > 0 && (
+                  <div className="flex-1">
+                    <GraficosProyeccion 
+                      resultados={{
+                        montoFinal: resultados.monto_total,
+                        aportesTotales: resultados.total_invertido,
+                        rendimientoTotal: resultados.ganancia_neta,
+                        proyeccionAnual: resultados.proyeccionAnual
+                      }} 
+                    />
+                  </div>
+                )}
+                
+                <Button
+                  variant="outline"
+                  className="flex-1 text-red-600 border-red-600 hover:bg-red-50"
+                  onClick={exportarPDF}
+                  disabled={isExportingPDF}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  {isExportingPDF ? 'Generando PDF...' : 'Descargar PDF'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Diálogo para ingresar nombre del escenario */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Guardar escenario</DialogTitle>
+                <DialogDescription>
+                  Ingresa un nombre para identificar este escenario en el comparador
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4">
+                <Label htmlFor="nombreEscenario">Nombre del escenario</Label>
+                <Input 
+                  id="nombreEscenario" 
+                  value={nombreEscenario} 
+                  onChange={(e) => setNombreEscenario(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={confirmarGuardarEscenario}>
+                  Guardar y continuar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           
           <Card className="mt-6" id="resultados-section" ref={resultadosRef}>
             <CardHeader>
@@ -610,84 +726,6 @@ export default function CalculadoraForm() {
                 </div>
               </div>
               
-              {/* Proyección año a año (colapsable) */}
-              <div className="mb-6">
-                <Button 
-                  type="button"
-                  onClick={() => setProyeccionAbierta(!proyeccionAbierta)}
-                  variant="outline"
-                  className="w-full mb-3 flex justify-between items-center py-2 border-stone-200 bg-stone-50"
-                >
-                  <span className="font-medium text-stone-800">Proyección de Crecimiento</span>
-                  <span className={`transition-transform duration-200 ${proyeccionAbierta ? 'rotate-180' : ''}`}>
-                    ▼
-                  </span>
-                </Button>
-                
-                {proyeccionAbierta && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="bg-stone-50 p-4 rounded-lg border border-stone-200">
-                      {(() => {
-                        // Generar proyección año a año
-                        const anios = Math.min(10, formData.edad_retiro - formData.edad_actual);
-                        const proyeccion = [];
-                        
-                        let monto = formData.capital_inicial;
-                        const rendimientoMensual = uiValues.rendimientoAnual / 100 / 12;
-                        
-                        for (let i = 1; i <= anios; i++) {
-                          // Calcular el monto para este año
-                          for (let m = 1; m <= 12; m++) {
-                            monto = (monto + formData.inversion_mensual) * (1 + rendimientoMensual);
-                          }
-                          
-                          proyeccion.push({
-                            anio: i,
-                            monto: monto,
-                            aportado: formData.capital_inicial + (formData.inversion_mensual * i * 12),
-                            ganancia: monto - (formData.capital_inicial + (formData.inversion_mensual * i * 12))
-                          });
-                        }
-                        
-                        return (
-                          <div className="overflow-x-auto">
-                            <table className="w-full min-w-full">
-                              <thead>
-                                <tr className="border-b border-stone-200">
-                                  <th className="text-left p-2 text-stone-600">Año</th>
-                                  <th className="text-right p-2 text-stone-600">Capital Acumulado</th>
-                                  <th className="text-right p-2 text-stone-600">Total Aportado</th>
-                                  <th className="text-right p-2 text-stone-600">Ganancia</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {proyeccion.map(item => (
-                                  <tr key={item.anio} className="border-b border-stone-100">
-                                    <td className="p-2 text-stone-800">{item.anio}</td>
-                                    <td className="p-2 text-right text-stone-800 font-medium">{formatCurrency(item.monto)}</td>
-                                    <td className="p-2 text-right text-stone-600">{formatCurrency(item.aportado)}</td>
-                                    <td className="p-2 text-right text-green-600">+{formatCurrency(item.ganancia)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            <p className="text-sm text-stone-500 mt-3">
-                              Tabla mostrando la proyección de los primeros {anios} años. El monto total a la edad de retiro ({formData.edad_retiro} años) será de {formatCurrency(resultados.monto_total)}.
-                            </p>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              
               {/* Tiempo para independencia financiera */}
               <div className="mb-6 p-4 bg-stone-50 rounded-lg border border-stone-200">
                 <h3 className="text-sm font-medium text-stone-600 mb-2">TIEMPO PARA INDEPENDENCIA FINANCIERA</h3>
@@ -717,36 +755,12 @@ export default function CalculadoraForm() {
                   const aporteNecesarioMensual = Math.max(0, capitalNecesario / factorCapitalizacion - (formData.capital_inicial * Math.pow(1 + tasaMensual, mesesHastaRetiro)) / factorCapitalizacion);
                   const aporteAdicionalMensual = Math.max(0, aporteNecesarioMensual - formData.inversion_mensual);
                   
-                  // Calcular cuánto tiempo tomará llegar ahí (después de la edad de retiro)
-                  let meses = 0;
-                  let monto = resultados.monto_total;
-                  const rendimientoMensual = uiValues.rendimientoAnual / 100 / 12;
-                  
-                  // Si el rendimiento es 0%, el bucle sería infinito
-                  if (uiValues.rendimientoAnual === 0) {
-                    meses = 1200; // Máximo de años (no se alcanzará la independencia financiera)
-                  } else {
-                    while (monto < capitalNecesario && meses < 1200) { // máximo 100 años
-                      monto = (monto + formData.inversion_mensual) * (1 + rendimientoMensual);
-                      meses++;
-                    }
-                  }
-                  
-                  const anios = Math.floor(meses / 12);
-                  const mesesRestantes = meses % 12;
-                  
-                  // Calcular la edad futura correctamente formateada
-                  const edadFutura = formData.edad_retiro + anios;
-                  const edadFormateada = mesesRestantes > 0 
-                    ? `${edadFutura} años y ${mesesRestantes} ${mesesRestantes === 1 ? 'mes' : 'meses'}`
-                    : `${edadFutura} años`;
-                  
                   // Si no se logrará con los aportes actuales
-                  if (meses >= 1200) {
+                  if (aporteAdicionalMensual > 0) {
                     return (
                       <div className="text-center">
                         <p className="text-amber-600 mb-2">
-                          {userName ? `${capitalizeName(userName)}, con tus aportes actuales` : 'Con tus aportes actuales'}, no lograrás la independencia financiera incluso después de tu edad de retiro.
+                          {userName ? `${capitalizeName(userName)}, con tus aportes actuales` : 'Con tus aportes actuales'}, no lograrás la independencia financiera al momento de tu retiro.
                         </p>
                         <p className="text-stone-700">
                           Necesitarás un capital de {formatCurrency(capitalNecesario)} para cubrir tus gastos solo con intereses.
@@ -767,31 +781,9 @@ export default function CalculadoraForm() {
                   
                   return (
                     <div className="text-center">
-                      <div className="bg-stone-100 p-4 rounded-lg mb-4">
-                        <h4 className="text-stone-800 font-medium mb-2">¿Qué significa "independencia financiera"?</h4>
-                        <p className="text-stone-700 mb-2">
-                          La independencia financiera se alcanza cuando tus inversiones generan suficientes intereses
-                          para cubrir todos tus gastos mensuales, sin necesidad de seguir trabajando o aportar más dinero.
-                        </p>
-                      </div>
-                      <p className="text-stone-700 mb-3">
-                        <strong>Al llegar a tu edad de retiro ({formData.edad_retiro} años):</strong> Los intereses proyectados que generará tu capital 
-                        ({formatCurrency(interesesMensuales)} mensuales) no serán suficientes para cubrir tus gastos estimados 
-                        ({formatCurrency(resultados.costo_vida_actualizado)} mensuales).
+                      <p className="text-green-600 font-medium">
+                        {userName ? `¡Excelente ${capitalizeName(userName)}!` : '¡Excelente!'} Según nuestros cálculos, con tus aportes actuales alcanzarás la independencia financiera a la edad de retiro.
                       </p>
-                      <p className="text-stone-700 mb-3">
-                        <strong>¿Qué necesitarás para lograr independencia financiera?</strong> Un capital total de <strong>{formatCurrency(capitalNecesario)}</strong> para generar suficientes intereses.
-                        Al momento de tu retiro, te faltarán <strong>{formatCurrency(capitalFaltante)}</strong>.
-                      </p>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-stone-800 font-medium mb-2">¿Quieres lograr independencia financiera a los {formData.edad_retiro} años?</p>
-                        <p className="text-stone-700">
-                          Necesitarías aportar <strong>{formatCurrency(aporteNecesarioMensual)}</strong> mensuales desde ahora hasta tu retiro.
-                        </p>
-                        <p className="text-blue-600 font-medium mt-2">
-                          Eso significa <strong>{formatCurrency(aporteAdicionalMensual)}</strong> adicionales a tu aporte actual de {formatCurrency(formData.inversion_mensual)}.
-                        </p>
-                      </div>
                     </div>
                   );
                 })()}
@@ -958,115 +950,7 @@ export default function CalculadoraForm() {
                   
                   {activeInfoBox === 'pregunta4' && (
                     <div className="p-4 bg-white">
-                      {(() => {
-                        // Preparar datos para las recomendaciones
-                        const aniosRestantes = formData.edad_retiro - formData.edad_actual;
-                        const mesesRestantes = aniosRestantes * 12;
-                        const interesesMensuales = resultados.monto_total * uiValues.rendimientoAnual / 100 / 12;
-                        const capitalNecesario = uiValues.rendimientoAnual === 0 ? 
-                          Infinity : (resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100);
-                        const capitalFaltante = capitalNecesario - resultados.monto_total;
-                        
-                        const tasaMensual = uiValues.rendimientoAnual / 100 / 12;
-                        const factorCapitalizado = tasaMensual === 0 ? 
-                          mesesRestantes : ((Math.pow(1 + tasaMensual, mesesRestantes) - 1) / tasaMensual);
-                        
-                        // La fórmula para calcular el aporte mensual necesario
-                        const aporteOptimoMensual = capitalFaltante / factorCapitalizado;
-                        const aporteTotal = aporteOptimoMensual + formData.inversion_mensual;
-                        
-                        // Si ya alcanzaste independencia financiera
-                        if (interesesMensuales >= resultados.costo_vida_actualizado) {
-                          return (
-                            <p className="text-stone-700">
-                              ¡Ya has alcanzado un excelente plan de retiro! Tu capital generará suficientes intereses para cubrir
-                              todos tus gastos. Si quieres mejorar aún más, podrías:
-                              <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Seguir aportando para incrementar tu nivel de vida en el retiro</li>
-                                <li>Diversificar tus inversiones para protegerte contra imprevistos</li>
-                                <li>Planificar cómo quieres utilizar el excedente (viajes, hobbies, herencia, etc.)</li>
-                              </ul>
-                            </p>
-                          );
-                        }
-                        
-                        return (
-                          <>
-                            <p className="text-stone-700 mb-3">
-                              Hay varias formas de mejorar tu plan de retiro:
-                            </p>
-                            <div className="space-y-3">
-                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-                                <p className="font-medium mb-1">1. Aumentar tu aporte mensual</p>
-                                <p className="text-sm">
-                                  Aportar <strong>un adicional de {formatCurrency(aporteOptimoMensual)}</strong> (además de tus {formatCurrency(formData.inversion_mensual)} actuales) 
-                                  para llegar a un total de <strong>{formatCurrency(aporteTotal)}</strong> mensuales te permitiría 
-                                  alcanzar la independencia financiera justo para tu edad de retiro.
-                                </p>
-                              </div>
-                              
-                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-                                <p className="font-medium mb-1">2. Reducir tus gastos futuros</p>
-                                <p className="text-sm">
-                                  Si pudieras reducir tus gastos mensuales proyectados de {formatCurrency(resultados.costo_vida_actualizado)} a {' '}
-                                  {formatCurrency(interesesMensuales)}, podrías vivir indefinidamente de los intereses.
-                                </p>
-                              </div>
-                              
-                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-                                <p className="font-medium mb-1">3. Extender tu horizonte de inversión</p>
-                                <p className="text-sm">
-                                  {uiValues.rendimientoAnual === 0 
-                                    ? "Con un rendimiento del 0%, no es posible alcanzar la independencia financiera solo extendiendo el horizonte de inversión."
-                                    : `Si mantuvieras tu aporte actual pero trabajaras más años, necesitarías aproximadamente ${Math.ceil((Math.log(capitalNecesario / resultados.monto_total) / Math.log(1 + uiValues.rendimientoAnual / 100)) + aniosRestantes)} años en total para alcanzar la independencia financiera (en lugar de ${aniosRestantes}).`
-                                  }
-                                </p>
-                              </div>
-                              
-                              <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-                                <p className="font-medium mb-1">4. Buscar un mayor rendimiento</p>
-                                <p className="text-sm">
-                                  Si pudieras aumentar tu rendimiento anual del {uiValues.rendimientoAnual}% al {(uiValues.rendimientoAnual * 1.5).toFixed(1)}%, 
-                                  alcanzarías la independencia financiera más rápido, aunque esto generalmente implica asumir más riesgo.
-                                </p>
-                              </div>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Pregunta 5: Conceptos básicos del interés compuesto */}
-                <div className="mb-3 border border-stone-200 rounded-lg overflow-hidden">
-                  <Button 
-                    type="button"
-                    onClick={() => setActiveInfoBox(activeInfoBox === 'pregunta5' ? null : 'pregunta5')}
-                    variant="ghost"
-                    className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
-                  >
-                    <span className="font-medium text-stone-800 text-left">¿Por qué el interés compuesto es tan poderoso?</span>
-                    <span className={`transition-transform duration-200 ${activeInfoBox === 'pregunta5' ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </Button>
-                  
-                  {activeInfoBox === 'pregunta5' && (
-                    <div className="p-4 bg-white">
-                      <p className="text-stone-700 mb-3">
-                        El interés compuesto es poderoso porque genera "interés sobre el interés", creando un efecto de bola de nieve 
-                        que acelera el crecimiento de tu dinero con el tiempo.
-                      </p>
-                      <p className="text-stone-700 mb-3">
-                        En tu caso, el interés compuesto ha transformado una inversión total de <strong>{formatCurrency(resultados.total_invertido)}</strong> en {' '}
-                        <strong>{formatCurrency(resultados.monto_total)}</strong>, generando una ganancia de <strong>{formatCurrency(resultados.ganancia_neta)}</strong> {' '}
-                        que representa un <strong>{((resultados.ganancia_neta / resultados.total_invertido) * 100).toFixed(0)}%</strong> sobre lo que invertiste.
-                      </p>
-                      <p className="text-stone-700">
-                        La proyección de crecimiento muestra cómo este efecto se acelera con el tiempo: en los primeros años el crecimiento es moderado, 
-                        pero en los últimos años se vuelve exponencial, generando mucho más dinero en menos tiempo.
-                      </p>
+                      {/* Contenido de la pregunta 4 */}
                     </div>
                   )}
                 </div>

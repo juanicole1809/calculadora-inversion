@@ -3,6 +3,8 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { BarChart } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useState } from "react";
 
 interface GraficosProyeccionProps {
   resultados: {
@@ -50,13 +52,13 @@ const CustomTooltip = ({ active, payload, label, formatter }: any) => {
 export function GraficosProyeccion({ resultados }: GraficosProyeccionProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
+      style: 'currency', 
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
   };
-
+ 
   // Formatear sin el símbolo de moneda para los ejes
   const formatCurrencyWithoutSymbol = (value: number) => {
     if (value === 0) return "0";
@@ -64,19 +66,17 @@ export function GraficosProyeccion({ resultados }: GraficosProyeccionProps) {
     if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
     return value.toString();
   };
-
+ 
   // Verificar si hay datos para mostrar
   if (!resultados.proyeccionAnual?.length) {
     console.warn('No hay datos de proyección para mostrar');
     return null;
   }
-
-  console.log('Datos de proyección:', resultados.proyeccionAnual);
-
+ 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2 bg-blue-50 text-blue-600 border-blue-600 hover:bg-blue-100">
           <BarChart className="w-4 h-4" />
           Ver Gráficos de Proyección
         </Button>
