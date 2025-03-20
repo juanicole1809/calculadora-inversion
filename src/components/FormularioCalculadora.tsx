@@ -172,7 +172,7 @@ export default function FormularioCalculadora({
                             }
                           } else if (textoIngresado === '') {
                             // Si el campo está vacío, limpiamos el estado
-                            setFormData(prev => ({
+                            setFormData((prev: typeof formData) => ({
                               ...prev,
                               fecha_nacimiento: new Date(''),
                               edad_actual: 0
@@ -391,16 +391,16 @@ export default function FormularioCalculadora({
                         onValueChange={(value) => {
                           if (value === "colchon") {
                             setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 0 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, rendimiento_anual: 0 }));
                           } else if (value === "conservadora") {
                             setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 3 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, rendimiento_anual: 3 }));
                           } else if (value === "moderada") {
                             setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 6 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, rendimiento_anual: 6 }));
                           } else if (value === "arriesgada") {
                             setRendimientoPersonalizado(false);
-                            setFormData(prev => ({ ...prev, rendimiento_anual: 9 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, rendimiento_anual: 9 }));
                           } else if (value === "otro") {
                             setRendimientoPersonalizado(true);
                           }
@@ -430,13 +430,13 @@ export default function FormularioCalculadora({
                             className="pr-8"
                             value={formData.rendimiento_anual === 0 ? '' : formData.rendimiento_anual}
                             onChange={(e) => {
-                              setFormData(prev => ({
+                              setFormData((prev: typeof formData) => ({
                                 ...prev,
                                 rendimiento_anual: e.target.value === '' ? '' : parseFloat(e.target.value) || 0
                               }))
                               // Limpiar error de validación cuando el usuario modifica el campo
                               if (validationErrors.rendimiento_anual) {
-                                setValidationErrors(prev => {
+                                setValidationErrors((prev: Record<string, string>) => {
                                   const newErrors = { ...prev }
                                   delete newErrors.rendimiento_anual
                                   return newErrors
@@ -474,16 +474,16 @@ export default function FormularioCalculadora({
                         onValueChange={(value) => {
                           if (value === "sin_inflacion") {
                             setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 0 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, inflacion_anual: 0 }));
                           } else if (value === "baja") {
                             setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 1.5 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, inflacion_anual: 1.5 }));
                           } else if (value === "moderada") {
                             setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 3.5 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, inflacion_anual: 3.5 }));
                           } else if (value === "alta") {
                             setInflacionPersonalizada(false);
-                            setFormData(prev => ({ ...prev, inflacion_anual: 6 }));
+                            setFormData((prev: typeof formData) => ({ ...prev, inflacion_anual: 6 }));
                           } else if (value === "otro") {
                             setInflacionPersonalizada(true);
                           }
@@ -513,13 +513,13 @@ export default function FormularioCalculadora({
                             className="pr-8"
                             value={formData.inflacion_anual === 0 ? '' : formData.inflacion_anual}
                             onChange={(e) => {
-                              setFormData(prev => ({
+                              setFormData((prev: typeof formData) => ({
                                 ...prev,
                                 inflacion_anual: e.target.value === '' ? '' : parseFloat(e.target.value) || 0
                               }))
                               // Limpiar error de validación
                               if (validationErrors.inflacion_anual) {
-                                setValidationErrors(prev => {
+                                setValidationErrors((prev: Record<string, string>) => {
                                   const newErrors = { ...prev }
                                   delete newErrors.inflacion_anual
                                   return newErrors
