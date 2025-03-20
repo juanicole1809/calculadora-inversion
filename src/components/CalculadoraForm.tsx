@@ -722,11 +722,11 @@ export default function CalculadoraForm() {
                       
                       return (
                         <>
-                          <div className="overflow-x-auto mt-3">
+                          <div className="overflow-x-auto mt-3 relative">
                             <table className="w-full border-collapse text-sm">
                               <thead>
                                 <tr className="bg-stone-100">
-                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Año</th>
+                                  <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs sticky left-0 bg-stone-100 z-10">Año</th>
                                   <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Edad</th>
                                   <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Aportes del año</th>
                                   <th className="border border-stone-200 px-3 py-2 text-left text-stone-700 text-xs">Aportes acumulados</th>
@@ -757,7 +757,7 @@ export default function CalculadoraForm() {
                                   
                                   return (
                                     <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-stone-50"}>
-                                      <td className="border border-stone-200 px-3 py-1 text-xs">{añoActual}</td>
+                                      <td className="border border-stone-200 px-3 py-1 text-xs sticky left-0 z-10 whitespace-nowrap font-medium shadow-sm" style={{backgroundColor: index % 2 === 0 ? 'white' : '#fafaf9'}}>{añoActual}</td>
                                       <td className="border border-stone-200 px-3 py-1 text-xs">{edadActual}</td>
                                       <td className="border border-stone-200 px-3 py-1 text-xs">{formatCurrency(aportesAnuales)}</td>
                                       <td className="border border-stone-200 px-3 py-1 text-xs">{formatCurrency(proyeccion.aportesAcumulados)}</td>
