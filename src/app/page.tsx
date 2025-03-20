@@ -69,7 +69,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="container mx-auto px-4 py-8 md:py-16">
-        <div className="max-w-4xl mx-auto text-center mb-8">
+        <div className="max-w-3xl mx-auto text-center mb-8">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-900">
             Calculadora de Inversión para tu Retiro
           </h1>
@@ -182,7 +182,7 @@ export default function Home() {
         </div>
 
         {/* Nueva sección de pasos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 mb-12">
+        <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 mb-12">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-primary/60 transition-colors">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-primary font-bold text-xl">1</span>
@@ -215,7 +215,7 @@ export default function Home() {
         </div>
 
         {/* Nueva sección de beneficios */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <div className="bg-stone-50 p-6 rounded-lg border border-stone-200">
             <h3 className="text-lg font-semibold text-stone-900 mb-3">¿Qué obtendrás?</h3>
             <ul className="text-left text-stone-600 space-y-2">
@@ -262,7 +262,7 @@ export default function Home() {
         </div>
 
         {/* Sección de Preguntas Frecuentes */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <h3 className="text-2xl font-bold text-center mb-8 text-slate-800">Preguntas Frecuentes</h3>
           <div className="space-y-4">
             <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
@@ -300,7 +300,7 @@ export default function Home() {
         </div>
 
         {/* Disclaimer */}
-        <div className="max-w-4xl mx-auto mt-12 p-4 bg-stone-50 rounded-lg border border-stone-200">
+        <div className="max-w-3xl mx-auto mt-12 p-4 bg-stone-50 rounded-lg border border-stone-200">
           <p className="text-xs text-stone-600 leading-relaxed text-center">
             Esta calculadora proporciona estimaciones con fines exclusivamente educativos e informativos. Los resultados mostrados 
             no constituyen asesoramiento financiero ni garantía de rendimiento futuro. Las proyecciones son hipotéticas y no consideran 

@@ -382,7 +382,7 @@ export default function CalculadoraForm() {
   const porcentajeGanancia = resultados ? Math.round((resultados.ganancia_neta / resultados.monto_total) * 100) : 0;
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-3xl px-4 py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-stone-900 mb-4">Calculadora de Inversión</h1>
         <p className="text-lg text-stone-600 mb-8">
@@ -390,33 +390,31 @@ export default function CalculadoraForm() {
         </p>
       </div>
 
-      <Card id="calculadora-form">
-        <CardContent>
-          <FormularioCalculadora
-            formData={formData}
-            textoFecha={textoFecha}
-            formStep={formStep}
-            validationErrors={validationErrors}
-            activeInfoBox={activeInfoBox}
-            inflacionPersonalizada={inflacionPersonalizada}
-            rendimientoPersonalizado={rendimientoPersonalizado}
-            isLoading={isLoading}
-            userName={userName}
-            setTextoFecha={setTextoFecha}
-            setFormData={setFormData}
-            setValidationErrors={setValidationErrors}
-            setActiveInfoBox={setActiveInfoBox}
-            setInflacionPersonalizada={setInflacionPersonalizada}
-            setRendimientoPersonalizado={setRendimientoPersonalizado}
-            handleDateChange={handleDateChange}
-            handleChange={handleChange}
-            handleSubmit={handleSubmit}
-            handleNextStep={handleNextStep}
-            handlePrevStep={handlePrevStep}
-            capitalizeName={capitalizeName}
-          />
-        </CardContent>
-      </Card>
+      <div id="calculadora-form">
+        <FormularioCalculadora
+          formData={formData}
+          textoFecha={textoFecha}
+          formStep={formStep}
+          validationErrors={validationErrors}
+          activeInfoBox={activeInfoBox}
+          inflacionPersonalizada={inflacionPersonalizada}
+          rendimientoPersonalizado={rendimientoPersonalizado}
+          isLoading={isLoading}
+          userName={userName}
+          setTextoFecha={setTextoFecha}
+          setFormData={setFormData}
+          setValidationErrors={setValidationErrors}
+          setActiveInfoBox={setActiveInfoBox}
+          setInflacionPersonalizada={setInflacionPersonalizada}
+          setRendimientoPersonalizado={setRendimientoPersonalizado}
+          handleDateChange={handleDateChange}
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          handleNextStep={handleNextStep}
+          handlePrevStep={handlePrevStep}
+          capitalizeName={capitalizeName}
+        />
+      </div>
 
       {resultados && (
         <>
@@ -471,7 +469,7 @@ export default function CalculadoraForm() {
           )}
 
           {/* Botones de acción */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 mb-6 w-full max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 mb-6 w-full max-w-3xl mx-auto">
             <Button
               variant="outline"
               className="w-full text-blue-600 border-blue-600 hover:bg-blue-50"
@@ -820,9 +818,12 @@ export default function CalculadoraForm() {
                         En tu caso, necesitas generar <strong>{formatCurrency(resultados.costo_vida_actualizado)}</strong> mensuales para mantener 
                         tu nivel de vida. {uiValues.rendimientoAnual === 0 
                           ? "Con un rendimiento anual del 0%, no es posible generar intereses para cubrir tus gastos."
-                          : `Con un rendimiento anual del ${uiValues.rendimientoAnual}%, necesitas un capital de 
-                            <strong> ${formatCurrency((resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100))}</strong> para generar esos intereses mensualmente.`
+                          : `Con un rendimiento anual del ${uiValues.rendimientoAnual}%, necesitas un capital de `
                         }
+                        {uiValues.rendimientoAnual > 0 && (
+                          <strong>{formatCurrency((resultados.costo_vida_actualizado * 12) / (uiValues.rendimientoAnual / 100))}</strong>
+                        )}
+                        {uiValues.rendimientoAnual > 0 && " para generar esos intereses mensualmente."}
                       </p>
                     </div>
                   )}
@@ -883,11 +884,19 @@ export default function CalculadoraForm() {
                         <p className="text-stone-700">
                           {uiValues.rendimientoAnual === 0 ? 
                             "Con un rendimiento del 0%, tu capital no generará intereses para cubrir tus gastos, por lo que eventualmente se agotará a menos que tus gastos sean cero." :
-                            `En tu caso, ¡buenas noticias! Los intereses que generará tu capital (<strong>${formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong> mensuales) 
-                            superan tus gastos mensuales (<strong>${formatCurrency(resultados.costo_vida_actualizado)}</strong>), 
-                            por lo que tu capital nunca se agotará. De hecho, seguirá creciendo incluso durante tu retiro, permitiéndote aumentar 
-                            tu nivel de vida o dejar una herencia.`
+                            `En tu caso, ¡buenas noticias! Los intereses que generará tu capital (`
                           }
+                          {uiValues.rendimientoAnual > 0 && (
+                            <strong>{formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong>
+                          )}
+                          {uiValues.rendimientoAnual > 0 && ` mensuales) 
+                            superan tus gastos mensuales (`}
+                          {uiValues.rendimientoAnual > 0 && (
+                            <strong>{formatCurrency(resultados.costo_vida_actualizado)}</strong>
+                          )}
+                          {uiValues.rendimientoAnual > 0 && `), 
+                            por lo que tu capital nunca se agotará. De hecho, seguirá creciendo incluso durante tu retiro, permitiéndote aumentar 
+                            tu nivel de vida o dejar una herencia.`}
                         </p>
                       ) : (
                         <>
@@ -905,9 +914,13 @@ export default function CalculadoraForm() {
                             Esto sucede porque tus gastos mensuales (<strong>{formatCurrency(resultados.costo_vida_actualizado)}</strong>) 
                             {uiValues.rendimientoAnual === 0 ?
                               " no pueden ser cubiertos por intereses, ya que con un rendimiento del 0% no se generan intereses." :
-                              ` son mayores que los intereses que genera tu capital (<strong>${formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong> mensuales), 
-                              por lo que cada mes consumirás una parte de tu capital principal hasta agotarlo.`
+                              ` son mayores que los intereses que genera tu capital (`
                             }
+                            {uiValues.rendimientoAnual > 0 && (
+                              <strong>{formatCurrency(resultados.monto_total * uiValues.rendimientoAnual / 100 / 12)}</strong>
+                            )}
+                            {uiValues.rendimientoAnual > 0 && ` mensuales), 
+                              por lo que cada mes consumirás una parte de tu capital principal hasta agotarlo.`}
                           </p>
                           <p className="text-stone-700">
                             Para aumentar la duración de tu capital, puedes: (1) incrementar tu capital acumulado antes del retiro, 
