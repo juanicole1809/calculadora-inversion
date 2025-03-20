@@ -488,7 +488,7 @@ export default function CalculadoraForm() {
       {resultados && (
         <>
           {/* Botones de acción inmediatamente después del formulario */}
-          <div className="flex gap-4 mt-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 mt-6 mb-6">
             <Button
               variant="outline"
               onClick={handleReset}
@@ -544,8 +544,8 @@ export default function CalculadoraForm() {
                       style={{ width: `${porcentajeGanancia}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row justify-between text-sm">
+                    <div className="flex items-center gap-2 mb-2 sm:mb-0">
                       <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                       <span>Capital invertido: {formatCurrency(resultados.total_invertido)} USD</span>
                     </div>
@@ -558,9 +558,9 @@ export default function CalculadoraForm() {
               </div>
 
               {/* Botones de gráficos y PDF */}
-              <div className="flex flex-wrap gap-4 mt-6">
+              <div className="flex flex-col sm:flex-row gap-4 mt-6">
                 {resultados && resultados.proyeccionAnual && resultados.proyeccionAnual.length > 0 && (
-                  <div className="flex-1">
+                  <div className="w-full sm:flex-1">
                     <GraficosProyeccion 
                       resultados={{
                         montoFinal: resultados.monto_total,
@@ -574,7 +574,7 @@ export default function CalculadoraForm() {
                 
                 <Button
                   variant="outline"
-                  className="flex-1 text-red-600 border-red-600 hover:bg-red-50"
+                  className="w-full sm:flex-1 text-red-600 border-red-600 hover:bg-red-50"
                   onClick={exportarPDF}
                   disabled={isExportingPDF}
                 >
@@ -803,8 +803,8 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left">¿Qué significa que puedo vivir de los intereses?</span>
-                    <span className={`transition-transform duration-200 ${activeInfoBox === 'pregunta1' ? 'rotate-180' : ''}`}>
+                    <span className="font-medium text-stone-800 text-left pr-2">¿Qué significa que puedo vivir de los intereses?</span>
+                    <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta1' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </Button>
@@ -838,8 +838,8 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left">¿Cuál es la diferencia entre mi monto invertido y mi ganancia?</span>
-                    <span className={`transition-transform duration-200 ${activeInfoBox === 'pregunta2' ? 'rotate-180' : ''}`}>
+                    <span className="font-medium text-stone-800 text-left pr-2">¿Cuál es la diferencia entre mi monto invertido y mi ganancia?</span>
+                    <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta2' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </Button>
@@ -873,8 +873,8 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left">¿Qué significa la duración de mi capital?</span>
-                    <span className={`transition-transform duration-200 ${activeInfoBox === 'pregunta3' ? 'rotate-180' : ''}`}>
+                    <span className="font-medium text-stone-800 text-left pr-2">¿Qué significa la duración de mi capital?</span>
+                    <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta3' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </Button>
@@ -942,8 +942,8 @@ export default function CalculadoraForm() {
                     variant="ghost"
                     className="w-full p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100"
                   >
-                    <span className="font-medium text-stone-800 text-left">¿Qué debo cambiar para mejorar mi plan de retiro?</span>
-                    <span className={`transition-transform duration-200 ${activeInfoBox === 'pregunta4' ? 'rotate-180' : ''}`}>
+                    <span className="font-medium text-stone-800 text-left pr-2">¿Qué debo cambiar para mejorar mi plan de retiro?</span>
+                    <span className={`flex-shrink-0 transition-transform duration-200 ${activeInfoBox === 'pregunta4' ? 'rotate-180' : ''}`}>
                       ▼
                     </span>
                   </Button>
