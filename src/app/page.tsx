@@ -227,7 +227,7 @@ export default function Home() {
             <ul className="text-left text-stone-600 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
-                Proyección detallada del crecimiento de tu capital
+                Proyección del crecimiento de tu capital
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>

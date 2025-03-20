@@ -695,7 +695,7 @@ export default function CalculadoraForm() {
                   variant="outline"
                   className="w-full mb-3 flex justify-between items-center py-2 border-stone-200 bg-stone-50"
                 >
-                  <span className="font-medium text-stone-800">Proyección detallada por año de tu Plan de Retiro</span>
+                  <span className="font-medium text-stone-800">Proyección por año de tu Plan de Retiro</span>
                   <span className={`transition-transform duration-200 ${proyeccionAbierta ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
