@@ -129,12 +129,12 @@ export default function FormularioCalculadora({
               className="h-8 flex items-center gap-1.5"
             >
               <Settings className="h-3.5 w-3.5" />
-              <span>Opciones</span>
+              <span>Parámetros avanzados</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle>Opciones de cálculo</DialogTitle>
+              <DialogTitle>Parámetros avanzados</DialogTitle>
               <DialogDescription>
                 Ajusta la configuración avanzada de los cálculos
               </DialogDescription>
@@ -289,19 +289,28 @@ export default function FormularioCalculadora({
                   <div className="space-y-2 md:col-span-2">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="costo_vida_mensual">Tu Costo de Vida Mensual al Retirarte (USD)</Label>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveInfoBox(activeInfoBox === 'costo_vida_mensual' ? null : 'costo_vida_mensual');
-                        }}
-                      >
-                        <InfoIcon className="h-4 w-4 text-stone-500" />
-                        <span className="sr-only">Información sobre Costo de Vida Mensual</span>
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-5 w-5 p-0 hover:bg-stone-100"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setActiveInfoBox(activeInfoBox === 'costo_vida_mensual' ? null : 'costo_vida_mensual');
+                              }}
+                            >
+                              <InfoIcon className="h-4 w-4 text-stone-500" />
+                              <span className="sr-only">Información</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white text-stone-800 border border-stone-200 shadow-md px-3 py-2 rounded-md text-sm max-w-xs">
+                            <p>Importe en dólares que estimas gastar mensualmente al momento de encontrarte retirado (cuando no poseas ingresos activos por no estar trabajando).</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                     {activeInfoBox === 'costo_vida_mensual' && (
                       <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
@@ -355,19 +364,28 @@ export default function FormularioCalculadora({
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="capital_inicial">Tu Capital Inicial (USD)</Label>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveInfoBox(activeInfoBox === 'capital_inicial' ? null : 'capital_inicial');
-                        }}
-                      >
-                        <InfoIcon className="h-4 w-4 text-stone-500" />
-                        <span className="sr-only">Información sobre Capital Inicial</span>
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-5 w-5 p-0 hover:bg-stone-100"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setActiveInfoBox(activeInfoBox === 'capital_inicial' ? null : 'capital_inicial');
+                              }}
+                            >
+                              <InfoIcon className="h-4 w-4 text-stone-500" />
+                              <span className="sr-only">Información</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white text-stone-800 border border-stone-200 shadow-md px-3 py-2 rounded-md text-sm max-w-xs">
+                            <p>Dinero que ya tienes al momento de comenzar la inversión, que estás dispuesto a invertir y no retirar hasta la pasividad.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                     {activeInfoBox === 'capital_inicial' && (
                       <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">
@@ -407,19 +425,28 @@ export default function FormularioCalculadora({
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="inversion_mensual">Tu Aporte Mensual (USD)</Label>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 p-0 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveInfoBox(activeInfoBox === 'inversion_mensual' ? null : 'inversion_mensual');
-                        }}
-                      >
-                        <InfoIcon className="h-4 w-4 text-stone-500" />
-                        <span className="sr-only">Información sobre Aporte Mensual</span>
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-5 w-5 p-0 hover:bg-stone-100"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setActiveInfoBox(activeInfoBox === 'inversion_mensual' ? null : 'inversion_mensual');
+                              }}
+                            >
+                              <InfoIcon className="h-4 w-4 text-stone-500" />
+                              <span className="sr-only">Información</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white text-stone-800 border border-stone-200 shadow-md px-3 py-2 rounded-md text-sm max-w-xs">
+                            <p>Importe promedio que estimas aportar a la inversión mensualmente y sin excepción, para incrementar el monto invertido y aprovechar al máximo los efectos positivos del interés compuesto.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                     {activeInfoBox === 'inversion_mensual' && (
                       <div className="bg-white p-3 rounded-md shadow-md border border-stone-200 mb-2 relative">

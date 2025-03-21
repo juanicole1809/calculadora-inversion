@@ -461,9 +461,9 @@ export default function CalculadoraForm() {
     <div className="container mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-center mb-4">
         <PiggyBank className="h-10 w-10 text-primary mr-2" />
-        <h1 className="text-3xl font-bold text-slate-900">
+        <a href="/" className="text-3xl font-bold text-slate-900 hover:text-primary transition-colors">
           <span className="font-black">MiRetiro</span>
-        </h1>
+        </a>
       </div>
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-stone-900 mb-4">Planificador de Inversión para Retiro</h2>
@@ -506,15 +506,15 @@ export default function CalculadoraForm() {
             <Button
               variant="outline"
               onClick={handleReset}
-              className="flex-1"
+              className="flex-1 border-stone-300"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Resetear valores
             </Button>
             
             <Button
-              variant="outline"
-              className="flex-1 bg-blue-50 text-blue-600 border-blue-600 hover:bg-blue-100"
+              variant="default"
+              className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
               onClick={guardarEscenarioYComparar}
             >
               <BarChart2 className="w-4 h-4 mr-2" />
@@ -523,16 +523,16 @@ export default function CalculadoraForm() {
           </div>
 
           {/* Card con el resumen de la inversión */}
-          <Card className="mt-6" id="resumen-inversion">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold">
+          <Card className="mt-6 overflow-hidden" id="resumen-inversion">
+            <div className="w-full bg-blue-50 pb-4 pt-6 px-6 border-b border-blue-100">
+              <h3 className="text-xl font-bold text-blue-800">
                 Resumen de tu Inversión
-              </CardTitle>
-              <CardDescription>
+              </h3>
+              <p className="text-blue-600 mt-1">
                 Proyección de capital y ganancias al momento de tu retiro
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
+            </div>
+            <CardContent className="pt-5">
               {/* Detalles de la inversión */}
               <div className="mb-4">
                 <Button 
@@ -680,12 +680,12 @@ export default function CalculadoraForm() {
             </DialogContent>
           </Dialog>
           
-          <Card className="mt-6" id="resultados-section" ref={resultadosRef}>
-            <CardHeader>
-              <CardTitle className="text-xl font-bold">
+          <Card className="mt-6 overflow-hidden" id="resultados-section" ref={resultadosRef}>
+            <div className="w-full bg-blue-50 pb-4 pt-6 px-6 border-b border-blue-100">
+              <h3 className="text-xl font-bold text-blue-800">
                 Resumen Proyectado de tu Plan de Retiro
-              </CardTitle>
-            </CardHeader>
+              </h3>
+            </div>
             <CardContent>
               {/* Nueva tabla de proyección anual con paginación */}
               <div className="mb-6">
@@ -777,42 +777,46 @@ export default function CalculadoraForm() {
                               <span className="text-xs text-stone-500">
                                 Página {paginaActual} de {totalPaginas}
                               </span>
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-1">
                                 <Button 
                                   variant="outline" 
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => cambiarPagina(1, totalPaginas)}
                                   disabled={paginaActual === 1}
-                                  className="text-xs h-8"
+                                  className="h-8 w-8 p-0"
                                 >
-                                  Primera
+                                  <span className="sr-only">Primera página</span>
+                                  <span className="text-xs">«</span>
                                 </Button>
                                 <Button 
                                   variant="outline" 
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => cambiarPagina(paginaActual - 1, totalPaginas)}
                                   disabled={paginaActual === 1}
-                                  className="text-xs h-8"
+                                  className="h-8 w-8 p-0"
                                 >
-                                  Anterior
+                                  <span className="sr-only">Página anterior</span>
+                                  <span className="text-xs">‹</span>
                                 </Button>
                                 <Button 
                                   variant="outline" 
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => cambiarPagina(paginaActual + 1, totalPaginas)}
                                   disabled={paginaActual === totalPaginas}
-                                  className="text-xs h-8"
+                                  className="h-8 w-8 p-0"
                                 >
-                                  Siguiente
+                                  <span className="sr-only">Página siguiente</span>
+                                  <span className="text-xs">›</span>
                                 </Button>
                                 <Button 
                                   variant="outline" 
-                                  size="sm"
+                                  size="icon"
                                   onClick={() => cambiarPagina(totalPaginas, totalPaginas)}
                                   disabled={paginaActual === totalPaginas}
-                                  className="text-xs h-8"
+                                  className="h-8 w-8 p-0"
                                 >
-                                  Última
+                                  <span className="sr-only">Última página</span>
+                                  <span className="text-xs">»</span>
                                 </Button>
                               </div>
                             </div>

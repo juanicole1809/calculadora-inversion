@@ -3,12 +3,13 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from 'sonner';
 import { EscenariosProvider } from "@/context/escenarios-context";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Calculadora de Retiro",
-  description: "Calcula el rendimiento de tus inversiones para garantizar un retiro cómodo según tu estilo de vida deseado",
+  title: "MiRetiro - Calculadora de Inversión para tu Retiro",
+  description: "Planifica tu futuro financiero y descubre cómo alcanzar la independencia financiera",
 };
 
 export default function RootLayout({
@@ -19,10 +20,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <EscenariosProvider>
-          {children}
-          <Toaster richColors position="bottom-right" closeButton />
-        </EscenariosProvider>
+        <ThemeProvider attribute="class" defaultTheme="light">
+          <EscenariosProvider>
+            {children}
+            <Toaster richColors position="bottom-right" closeButton />
+          </EscenariosProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
