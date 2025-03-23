@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MiRetiro - Calculadora de Inversión para Retiro
 
-## Getting Started
+Este es un proyecto [Next.js](https://nextjs.org) que proporciona una calculadora interactiva para planificar inversiones a largo plazo con el objetivo de alcanzar la independencia financiera para el retiro.
 
-First, run the development server:
+## Características principales
+
+- Cálculo de proyecciones de inversión basadas en capital inicial y aportes mensuales
+- Simulaciones con diferentes tasas de rendimiento e inflación
+- Visualización de resultados mediante gráficos dinámicos
+- Análisis de tiempo para alcanzar independencia financiera
+- Exportación de resultados a PDF
+- Comparación de diferentes escenarios de inversión
+- Diseño responsive optimizado para dispositivos móviles y escritorio
+
+## Primeros pasos
+
+Primero, instala las dependencias:
+
+```bash
+npm install
+# o
+yarn install
+# o
+pnpm install
+```
+
+Luego, ejecuta el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
+# o
 yarn dev
-# or
+# o
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver el resultado.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estructura del proyecto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/components`: Componentes reutilizables de la interfaz
+- `src/lib`: Utilidades y funciones auxiliares
+- `src/context`: Contextos de React para gestión de estado global
+- `src/api`: Endpoints de la API para cálculos financieros
 
-## Learn More
+## Tecnologías utilizadas
 
-To learn more about Next.js, take a look at the following resources:
+- [Next.js](https://nextjs.org/) - Framework de React
+- [TypeScript](https://www.typescriptlang.org/) - Tipado estático
+- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS
+- [shadcn/ui](https://ui.shadcn.com/) - Componentes de UI
+- [Framer Motion](https://www.framer.com/motion/) - Animaciones
+- [Recharts](https://recharts.org/) - Visualización de datos
+- [date-fns](https://date-fns.org/) - Manipulación de fechas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Aprende más
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Para aprender más sobre Next.js, consulta los siguientes recursos:
 
-## Deploy on Vercel
+- [Documentación de Next.js](https://nextjs.org/docs) - aprende sobre las características y API de Next.js.
+- [Aprende Next.js](https://nextjs.org/learn) - un tutorial interactivo de Next.js.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Puedes revisar [el repositorio de GitHub de Next.js](https://github.com/vercel/next.js) - ¡tus comentarios y contribuciones son bienvenidos!
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Despliegue
+
+La forma más sencilla de desplegar esta aplicación es utilizando la [Plataforma Vercel](https://vercel.com/new). Simplemente conecta tu repositorio de GitHub y Vercel se encargará del resto.
+
+Consulta nuestra [documentación de despliegue de Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para más detalles.
+
+## Licencia
+
+Este proyecto fue desarrollado por Juan Ignacio Colella.
