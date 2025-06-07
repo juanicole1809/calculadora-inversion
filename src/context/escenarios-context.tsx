@@ -14,6 +14,7 @@ export interface Escenario {
   edadActual: number
   edadRetiro: number
   costoVidaMensual: number
+  actualizarAportePorInflacion: boolean
   color: string
   resultado?: number
   crecimientoPorAnio?: number[]
@@ -49,7 +50,13 @@ export function EscenariosProvider({ children }: { children: ReactNode }) {
     const escenariosGuardados = localStorage.getItem("escenarios")
     if (escenariosGuardados) {
       try {
-        setEscenarios(JSON.parse(escenariosGuardados))
+        const escenariosParsed = JSON.parse(escenariosGuardados)
+        // Migración: agregar actualizarAportePorInflacion a escenarios existentes
+        const escenariosConMigracion = escenariosParsed.map((escenario: any) => ({
+          ...escenario,
+          actualizarAportePorInflacion: escenario.actualizarAportePorInflacion ?? true
+        }))
+        setEscenarios(escenariosConMigracion)
       } catch (error) {
         console.error("Error al cargar escenarios:", error)
       }
@@ -66,7 +73,7 @@ export function EscenariosProvider({ children }: { children: ReactNode }) {
     return Date.now().toString(36) + Math.random().toString(36).substring(2)
   }
 
-  // Calcular resultado de un escenario
+  // Calcular resultado de un escenario - MISMA LÓGICA QUE LA API
   const calcularResultado = (escenario: Escenario) => {
     const { 
       montoInicial, 
@@ -74,27 +81,88 @@ export function EscenariosProvider({ children }: { children: ReactNode }) {
       tasaInteres, 
       plazoAnios,
       inflacion,
-      edadActual,
-      edadRetiro
+      actualizarAportePorInflacion
     } = escenario
     
-    const tasaDecimal = tasaInteres / 100
-    const inflacionDecimal = inflacion / 100
-    const aportacionAnual = aportacionMensual * 12
-    const aniosTotales = edadRetiro - edadActual
+    // Convertir años a meses
+    const total_meses = Math.floor(plazoAnios * 12)
+    
+    // Convertir tasas anuales a mensual
+    const tasa_mensual = tasaInteres / 100 / 12
+    
+    // Cálculo del monto acumulado durante la fase de inversión
+    let monto_total = montoInicial
+    if (tasaInteres === 0) {
+      if (actualizarAportePorInflacion) {
+        // Si actualizamos los aportes por inflación
+        let aporte_mensual_actual = aportacionMensual;
+        for (let i = 0; i < total_meses; i++) {
+          monto_total += aporte_mensual_actual;
+          if ((i + 1) % 12 === 0) {
+            // Actualizamos el aporte cada 12 meses (anualmente)
+            aporte_mensual_actual *= (1 + (inflacion / 100));
+          }
+        }
+      } else {
+        // Si la tasa es 0% y no actualizamos los aportes, simplemente sumamos los aportes sin interés
+        monto_total = montoInicial + (aportacionMensual * total_meses);
+      }
+    } else {
+      if (actualizarAportePorInflacion) {
+        // Con interés compuesto y actualización de aportes por inflación
+        let aporte_mensual_actual = aportacionMensual;
+        for (let i = 0; i < total_meses; i++) {
+          monto_total = (monto_total + aporte_mensual_actual) * (1 + tasa_mensual);
+          if ((i + 1) % 12 === 0) {
+            // Actualizamos el aporte cada 12 meses (anualmente)
+            aporte_mensual_actual *= (1 + (inflacion / 100));
+          }
+        }
+      } else {
+        // Con interés compuesto y aporte fijo
+        for (let i = 0; i < total_meses; i++) {
+          monto_total = (monto_total + aportacionMensual) * (1 + tasa_mensual);
+        }
+      }
+    }
 
-    let montoFinal = montoInicial
-    const crecimientoPorAnio = [montoInicial]
-
-    for (let i = 0; i < aniosTotales; i++) {
-      // Ajustar por inflación cada año
-      const tasaRealAnual = (1 + tasaDecimal) / (1 + inflacionDecimal) - 1
-      montoFinal = montoFinal * (1 + tasaRealAnual) + aportacionAnual
-      crecimientoPorAnio.push(montoFinal)
+    // Generar proyección anual - MISMA LÓGICA QUE LA API
+    const crecimientoPorAnio = [];
+    let saldoAnual = montoInicial;
+    let aportesAcumulados = montoInicial;
+    let rendimientoAcumulado = 0;
+    
+    // Añadir año inicial (año 0)
+    crecimientoPorAnio.push(Math.round(saldoAnual));
+    
+    // Calcular para cada año
+    let aporte_mensual_actual = aportacionMensual;
+    for (let año = 1; año <= plazoAnios; año++) {
+      let saldoInicioAño = saldoAnual;
+      let aportesAño = 0;
+      
+      // Calcular 12 meses de este año
+      for (let mes = 1; mes <= 12; mes++) {
+        saldoAnual = (saldoAnual + aporte_mensual_actual) * (1 + tasa_mensual);
+        aportesAño += aporte_mensual_actual;
+      }
+      
+      // Actualizar el aporte mensual por inflación si corresponde
+      if (actualizarAportePorInflacion) {
+        aporte_mensual_actual *= (1 + (inflacion / 100));
+      }
+      
+      aportesAcumulados += aportesAño;
+      
+      // El rendimiento es la diferencia entre el saldo final y el saldo inicial + aportes
+      const rendimientoAño = saldoAnual - (saldoInicioAño + aportesAño);
+      rendimientoAcumulado += rendimientoAño;
+      
+      crecimientoPorAnio.push(Math.round(saldoAnual));
     }
 
     return {
-      montoFinal,
+      montoFinal: monto_total, // Sin redondear para mantener precisión
       crecimientoPorAnio,
     }
   }

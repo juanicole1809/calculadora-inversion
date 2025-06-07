@@ -439,7 +439,8 @@ export default function CalculadoraForm() {
         edadActual: formData.edad_actual,
         edadRetiro: formData.edad_retiro,
         costoVidaMensual: formData.costo_vida_mensual,
-        plazoAnios: formData.edad_retiro - formData.edad_actual
+        plazoAnios: formData.edad_retiro - formData.edad_actual,
+        actualizarAportePorInflacion: formData.actualizar_aporte_por_inflacion !== false
       });
 
       toast.success('Escenario guardado correctamente', {
