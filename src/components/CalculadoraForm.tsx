@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
-import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer, PiggyBank, BarChart2 } from 'lucide-react'
+import { InfoIcon, XIcon, RefreshCw, ArrowRight, ArrowLeft, Calculator, FileText, Printer, PiggyBank, BarChart2, Save } from 'lucide-react'
 import { 
   Select, 
   SelectContent, 
@@ -104,7 +104,7 @@ export default function CalculadoraForm() {
   const [isExportingPDF, setIsExportingPDF] = useState(false)
   
   const router = useRouter();
-  const { agregarEscenario } = useEscenarios();
+  const { agregarEscenario, escenarios } = useEscenarios();
   
   // Cargar el nombre del usuario desde localStorage
   useEffect(() => {
@@ -506,19 +506,10 @@ export default function CalculadoraForm() {
             <Button
               variant="outline"
               onClick={handleReset}
-              className="flex-1 border-stone-300"
+              className="w-full border-stone-300"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Resetear valores
-            </Button>
-            
-            <Button
-              variant="default"
-              className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
-              onClick={guardarEscenarioYComparar}
-            >
-              <BarChart2 className="w-4 h-4 mr-2" />
-              Guardar y comparar escenarios
             </Button>
           </div>
 
@@ -640,6 +631,15 @@ export default function CalculadoraForm() {
                 
                 <Button
                   variant="outline"
+                  className="w-full sm:flex-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 bg-emerald-25"
+                  onClick={guardarEscenarioYComparar}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Guardar Escenario
+                </Button>
+                
+                <Button
+                  variant="outline"
                   className="w-full sm:flex-1 text-red-600 border-red-600 hover:bg-red-50"
                   onClick={exportarPDF}
                   disabled={isExportingPDF}
@@ -648,6 +648,20 @@ export default function CalculadoraForm() {
                   {isExportingPDF ? 'Generando PDF...' : 'Descargar PDF'}
                 </Button>
               </div>
+              
+              {/* Enlace al comparador si hay escenarios guardados */}
+              {escenarios.length > 0 && (
+                <div className="mt-4 text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push('/comparador')}
+                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                  >
+                    📊 Ver mis {escenarios.length} escenario{escenarios.length > 1 ? 's' : ''} guardado{escenarios.length > 1 ? 's' : ''} →
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
           
@@ -657,7 +671,7 @@ export default function CalculadoraForm() {
               <DialogHeader>
                 <DialogTitle>Guardar escenario</DialogTitle>
                 <DialogDescription>
-                  Ingresa un nombre para identificar este escenario en el comparador
+                  Dale un nombre a este escenario para compararlo con otros en el futuro
                 </DialogDescription>
               </DialogHeader>
               <div className="py-4">
@@ -667,14 +681,23 @@ export default function CalculadoraForm() {
                   value={nombreEscenario} 
                   onChange={(e) => setNombreEscenario(e.target.value)}
                   className="mt-2"
+                  placeholder="Ej: Escenario Conservador, Plan Agresivo..."
                 />
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+                <p className="font-medium mb-1">¿Qué puedes hacer después?</p>
+                <ul className="text-xs space-y-1">
+                  <li>• Comparar este escenario con otros</li>
+                  <li>• Crear variaciones cambiando variables</li>
+                  <li>• Ver gráficos de proyección lado a lado</li>
+                </ul>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancelar
                 </Button>
                 <Button onClick={confirmarGuardarEscenario}>
-                  Guardar y continuar
+                  Guardar y ver comparador
                 </Button>
               </DialogFooter>
             </DialogContent>

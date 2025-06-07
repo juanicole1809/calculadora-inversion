@@ -17,8 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  BarChart,
-  LineChart,
+  BarChart as BarChartIcon,
+  LineChart as LineChartIcon,
   PlusCircle,
   Edit,
   Trash2,
@@ -34,6 +34,19 @@ import {
   Calendar,
   PiggyBank,
 } from "lucide-react"
+import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar as RechartsBar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts'
 import { useEscenarios, type Escenario } from "@/context/escenarios-context"
 import Link from "next/link"
 
@@ -115,6 +128,7 @@ export default function ComparadorEscenarios() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditando, setIsEditando] = useState(false)
   const [activeTab, setActiveTab] = useState("escenarios")
+  const [tipoGrafico, setTipoGrafico] = useState<'lineas' | 'barras'>('lineas')
 
   // Formatear números para mostrar
   const formatearNumero = (numero: number) => {
@@ -185,136 +199,117 @@ export default function ComparadorEscenarios() {
     return Math.max(...escenarios.map((e) => (e.crecimientoPorAnio ? Math.max(...e.crecimientoPorAnio) : 0)))
   }
 
-  // Renderizar el gráfico de líneas
+  // Preparar datos para los gráficos
+  const prepararDatosGrafico = () => {
+    if (escenarios.length === 0) return []
+    
+    const maxAnios = Math.max(...escenarios.map((e) => e.plazoAnios))
+    const datos = []
+    
+    for (let año = 0; año <= maxAnios; año++) {
+      const punto: any = { año }
+      
+      escenarios.forEach((escenario) => {
+        if (escenario.crecimientoPorAnio && escenario.crecimientoPorAnio[año] !== undefined) {
+          punto[escenario.nombre] = escenario.crecimientoPorAnio[año]
+        }
+      })
+      
+      datos.push(punto)
+    }
+    
+    return datos
+  }
+
+  // Obtener colores para los gráficos
+  const obtenerColoresGrafico = () => {
+    const colores = {
+      'bg-blue-500': '#3b82f6',
+      'bg-emerald-500': '#10b981',
+      'bg-amber-500': '#f59e0b',
+      'bg-rose-500': '#f43f5e',
+      'bg-violet-500': '#8b5cf6',
+      'bg-cyan-500': '#06b6d4',
+      'bg-fuchsia-500': '#d946ef',
+      'bg-lime-500': '#84cc16',
+    }
+    
+    return escenarios.map(escenario => ({
+      nombre: escenario.nombre,
+      color: colores[escenario.color as keyof typeof colores] || '#3b82f6'
+    }))
+  }
+
+  // Formatear valores en el tooltip
+  const formatearTooltip = (value: number, name: string) => {
+    return [`$${formatearNumero(value)}`, name]
+  }
+
+  // Renderizar el gráfico según el tipo seleccionado
   const renderizarGrafico = () => {
     if (escenarios.length === 0) return null
 
-    const maxValor = encontrarValorMaximo()
-    const maxAnios = Math.max(...escenarios.map((e) => e.plazoAnios))
-    const alturaGrafico = 300
-    const anchoGrafico = 800
-    const padding = { top: 20, right: 20, bottom: 40, left: 60 }
-    const anchoUtil = anchoGrafico - padding.left - padding.right
-    const alturaUtil = alturaGrafico - padding.top - padding.bottom
+    const datos = prepararDatosGrafico()
+    const colores = obtenerColoresGrafico()
 
-    // Crear escala para el eje X (años)
-    const escalaX = (anio: number) => padding.left + (anio / maxAnios) * anchoUtil
+    if (tipoGrafico === 'lineas') {
+      return (
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart data={datos} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="año" 
+              label={{ value: 'Años', position: 'insideBottom', offset: -10 }}
+            />
+            <YAxis 
+              tickFormatter={(value) => `$${formatearNumero(value)}`}
+              label={{ value: 'Monto ($)', angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip formatter={formatearTooltip} />
+            <Legend />
+            {escenarios.map((escenario, index) => (
+              <Line
+                key={escenario.id}
+                type="monotone"
+                dataKey={escenario.nombre}
+                stroke={colores[index]?.color || '#3b82f6'}
+                strokeWidth={3}
+                dot={{ fill: colores[index]?.color || '#3b82f6', strokeWidth: 2, r: 4 }}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      )
+    } else {
+      // Preparar datos para gráfico de barras (solo monto final)
+      const datosBarras = escenarios.map(escenario => ({
+        nombre: escenario.nombre,
+        montoFinal: escenario.resultado || 0,
+        color: colores.find(c => c.nombre === escenario.nombre)?.color || '#3b82f6'
+      }))
 
-    // Crear escala para el eje Y (montos)
-    const escalaY = (valor: number) => alturaGrafico - padding.bottom - (valor / maxValor) * alturaUtil
-
-    return (
-      <div className="relative mt-6 overflow-x-auto">
-        <svg width={anchoGrafico} height={alturaGrafico} className="mx-auto">
-          {/* Eje Y */}
-          <line
-            x1={padding.left}
-            y1={padding.top}
-            x2={padding.left}
-            y2={alturaGrafico - padding.bottom}
-            stroke="#e2e8f0"
-            strokeWidth="1"
-          />
-
-          {/* Eje X */}
-          <line
-            x1={padding.left}
-            y1={alturaGrafico - padding.bottom}
-            x2={anchoGrafico - padding.right}
-            y2={alturaGrafico - padding.bottom}
-            stroke="#e2e8f0"
-            strokeWidth="1"
-          />
-
-          {/* Líneas de cuadrícula horizontales */}
-          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
-            const y = escalaY(maxValor * ratio)
-            return (
-              <g key={`grid-h-${i}`}>
-                <line
-                  x1={padding.left}
-                  y1={y}
-                  x2={anchoGrafico - padding.right}
-                  y2={y}
-                  stroke="#e2e8f0"
-                  strokeWidth="1"
-                  strokeDasharray="4"
-                />
-                <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#64748b">
-                  ${formatearNumero(maxValor * ratio)}
-                </text>
-              </g>
-            )
-          })}
-
-          {/* Etiquetas del eje X */}
-          {Array.from({ length: maxAnios + 1 }).map((_, i) => {
-            if (i % Math.ceil(maxAnios / 10) === 0 || i === maxAnios) {
-              return (
-                <text
-                  key={`label-x-${i}`}
-                  x={escalaX(i)}
-                  y={alturaGrafico - padding.bottom + 20}
-                  textAnchor="middle"
-                  fontSize="12"
-                  fill="#64748b"
-                >
-                  {i}
-                </text>
-              )
-            }
-            return null
-          })}
-
-          {/* Líneas para cada escenario */}
-          {escenarios.map((escenario) => {
-            if (!escenario.crecimientoPorAnio) return null
-
-            const puntos = escenario.crecimientoPorAnio
-              .map((valor, anio) => `${escalaX(anio)},${escalaY(valor)}`)
-              .join(" ")
-
-            const colorLinea = escenario.color.replace("bg-", "stroke-")
-
-            return (
-              <g key={escenario.id}>
-                <polyline
-                  points={puntos}
-                  fill="none"
-                  className={colorLinea}
-                  strokeWidth="3"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-
-                {/* Puntos en cada año */}
-                {escenario.crecimientoPorAnio.map((valor, anio) => (
-                  <circle
-                    key={`${escenario.id}-${anio}`}
-                    cx={escalaX(anio)}
-                    cy={escalaY(valor)}
-                    r="4"
-                    className={escenario.color.replace("bg-", "fill-")}
-                    stroke="white"
-                    strokeWidth="1"
-                  />
-                ))}
-              </g>
-            )
-          })}
-        </svg>
-
-        {/* Leyenda */}
-        <div className="flex flex-wrap gap-4 justify-center mt-4">
-          {escenarios.map((escenario) => (
-            <div key={`legend-${escenario.id}`} className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${escenario.color}`}></div>
-              <span className="text-sm">{escenario.nombre}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+      return (
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={datosBarras} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="nombre" 
+              label={{ value: 'Escenarios', position: 'insideBottom', offset: -10 }}
+            />
+            <YAxis 
+              tickFormatter={(value) => `$${formatearNumero(value)}`}
+              label={{ value: 'Monto Final ($)', angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip formatter={formatearTooltip} />
+            <RechartsBar dataKey="montoFinal">
+              {datosBarras.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </RechartsBar>
+          </BarChart>
+        </ResponsiveContainer>
+      )
+    }
   }
 
   return (
@@ -458,12 +453,20 @@ export default function ComparadorEscenarios() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <BarChart className="mr-2 h-4 w-4" />
+                <Button 
+                  variant={tipoGrafico === 'barras' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTipoGrafico('barras')}
+                >
+                  <BarChartIcon className="mr-2 h-4 w-4" />
                   Gráfico de barras
                 </Button>
-                <Button size="sm" variant="default">
-                  <LineChart className="mr-2 h-4 w-4" />
+                <Button 
+                  variant={tipoGrafico === 'lineas' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTipoGrafico('lineas')}
+                >
+                  <LineChartIcon className="mr-2 h-4 w-4" />
                   Gráfico de líneas
                 </Button>
               </div>
@@ -504,45 +507,123 @@ export default function ComparadorEscenarios() {
                             <TableHead>Escenario</TableHead>
                             <TableHead className="text-right">Cap. Inicial</TableHead>
                             <TableHead className="text-right">Aporte mensual</TableHead>
+                            <TableHead className="text-right">Total Invertido</TableHead>
                             <TableHead className="text-right">Rendimiento</TableHead>
                             <TableHead className="text-right">Inflación</TableHead>
                             <TableHead className="text-right">Monto final</TableHead>
+                            <TableHead className="text-right">Ganancia Neta</TableHead>
                             <TableHead className="text-right">% Retorno</TableHead>
+                            <TableHead className="text-right">Años</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {escenarios.map((escenario) => {
                             const inversionTotal =
                               escenario.montoInicial + escenario.aportacionMensual * 12 * escenario.plazoAnios
-                            const rendimiento = (((escenario.resultado || 0) - inversionTotal) / inversionTotal) * 100
+                            const gananciaNeta = (escenario.resultado || 0) - inversionTotal
+                            const rendimiento = (gananciaNeta / inversionTotal) * 100
 
                             return (
                               <TableRow key={`table-${escenario.id}`}>
                                 <TableCell>
                                   <div className="flex items-center gap-2">
                                     <div className={`w-3 h-3 rounded-full ${escenario.color}`}></div>
-                                    <span>{escenario.nombre}</span>
+                                    <span className="font-medium">{escenario.nombre}</span>
                                   </div>
                                 </TableCell>
                                 <TableCell className="text-right">${formatearNumero(escenario.montoInicial)}</TableCell>
                                 <TableCell className="text-right">
                                   ${formatearNumero(escenario.aportacionMensual)}
                                 </TableCell>
+                                <TableCell className="text-right font-medium text-blue-600">
+                                  ${formatearNumero(inversionTotal)}
+                                </TableCell>
                                 <TableCell className="text-right">{escenario.tasaInteres}%</TableCell>
                                 <TableCell className="text-right">{escenario.inflacion}%</TableCell>
-                                <TableCell className="text-right font-medium">
+                                <TableCell className="text-right font-bold text-green-600">
                                   ${formatearNumero(escenario.resultado || 0)}
                                 </TableCell>
+                                <TableCell className="text-right font-medium text-emerald-600">
+                                  ${formatearNumero(gananciaNeta)}
+                                </TableCell>
                                 <TableCell className="text-right">
-                                  <div className="bg-green-50 text-green-700 rounded-full px-2 py-1 text-xs font-medium inline-block">
-                                    +{rendimiento.toFixed(1)}%
+                                  <div className={`rounded-full px-2 py-1 text-xs font-medium inline-block ${
+                                    rendimiento > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                                  }`}>
+                                    {rendimiento > 0 ? '+' : ''}{rendimiento.toFixed(1)}%
                                   </div>
+                                </TableCell>
+                                <TableCell className="text-right text-slate-600">
+                                  {escenario.plazoAnios} años
                                 </TableCell>
                               </TableRow>
                             )
                           })}
                         </TableBody>
                       </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Resumen estadístico */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Resumen Estadístico</CardTitle>
+                    <CardDescription>Comparación destacada entre todos los escenarios</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {(() => {
+                        const mejorEscenario = escenarios.reduce((prev, current) => 
+                          (current.resultado || 0) > (prev.resultado || 0) ? current : prev
+                        )
+                        const peorEscenario = escenarios.reduce((prev, current) => 
+                          (current.resultado || 0) < (prev.resultado || 0) ? current : prev
+                        )
+                        const promedioMonto = escenarios.reduce((sum, e) => sum + (e.resultado || 0), 0) / escenarios.length
+                        
+                        return (
+                          <>
+                            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                              <h4 className="font-semibold text-green-800 mb-2">🏆 Mejor Escenario</h4>
+                              <div className="space-y-1">
+                                <p className="font-medium text-green-700">{mejorEscenario.nombre}</p>
+                                <p className="text-sm text-green-600">
+                                  Monto final: <span className="font-bold">${formatearNumero(mejorEscenario.resultado || 0)}</span>
+                                </p>
+                                <p className="text-xs text-green-500">
+                                  Rendimiento: {mejorEscenario.tasaInteres}% | Inflación: {mejorEscenario.inflacion}%
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                              <h4 className="font-semibold text-slate-800 mb-2">📊 Promedio</h4>
+                              <div className="space-y-1">
+                                <p className="text-sm text-slate-600">
+                                  Monto promedio: <span className="font-bold">${formatearNumero(promedioMonto)}</span>
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  Basado en {escenarios.length} escenario{escenarios.length > 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                              <h4 className="font-semibold text-amber-800 mb-2">⚠️ Menor Rendimiento</h4>
+                              <div className="space-y-1">
+                                <p className="font-medium text-amber-700">{peorEscenario.nombre}</p>
+                                <p className="text-sm text-amber-600">
+                                  Monto final: <span className="font-bold">${formatearNumero(peorEscenario.resultado || 0)}</span>
+                                </p>
+                                <p className="text-xs text-amber-500">
+                                  Diferencia: -${formatearNumero((mejorEscenario.resultado || 0) - (peorEscenario.resultado || 0))}
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
